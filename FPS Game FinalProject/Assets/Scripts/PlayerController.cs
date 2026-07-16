@@ -1,13 +1,14 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController Instance;
 
-    public float moveSpeed = 8f;
-    public float gravityModifier = 4f;
-    public float jumpingPower = 9f;
-    public float runSpeed = 16f;
+    public float moveSpeed;
+    public float gravityModifier;
+    public float jumpingPower;
+    public float runSpeed;
 
     public CharacterController charCon;
     private Vector3 moveInput;
@@ -15,68 +16,77 @@ public class PlayerController : MonoBehaviour
     public Transform camTrans;
     public Animator anim;
 
-    int jumpAgain;
+    private int jumpAgain;
 
     public GameObject bullet;
     public Transform firePoint;
 
-    public float mouseSensitivity = 3f;
-
-    void Start()
-    {
-        if (charCon == null)
-            charCon = GetComponent<CharacterController>();
-
-        Debug.Log("PlayerController Started");
-
-        if (charCon == null)
-            Debug.LogError("CharacterController is NULL!");
-
-        if (camTrans == null)
-            Debug.LogError("Camera Transform is NULL!");
-
-        if (anim == null)
-            Debug.LogError("Animator is NULL!");
-    }
+    public float mouseSensitivity;
 
     void Update()
     {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+        float horizontal = 0f;
+        float vertical = 0f;
 
-        Debug.Log($"Horizontal = {h}  Vertical = {v}");
+        // Read keyboard movement using the new Input System
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.wKey.isPressed)
+                vertical += 1f;
+
+            if (Keyboard.current.sKey.isPressed)
+                vertical -= 1f;
+
+            if (Keyboard.current.dKey.isPressed)
+                horizontal += 1f;
+
+            if (Keyboard.current.aKey.isPressed)
+                horizontal -= 1f;
+        }
 
         float yStore = moveInput.y;
 
-        Vector3 vertMove = transform.forward * v;
-        Vector3 horiMove = transform.right * h;
+        // Move based on the player's facing direction
+        Vector3 vertMove = transform.forward * vertical;
+        Vector3 horiMove = transform.right * horizontal;
 
         moveInput = vertMove + horiMove;
         moveInput.Normalize();
 
-        if (Input.GetKey(KeyCode.LeftShift))
+        // Running
+        if (Keyboard.current != null &&
+            Keyboard.current.leftShiftKey.isPressed)
+        {
             moveInput *= runSpeed;
+        }
         else
+        {
             moveInput *= moveSpeed;
+        }
 
         moveInput.y = yStore;
+
+        // Gravity
+        moveInput.y += Physics.gravity.y
+                       * gravityModifier
+                       * Time.deltaTime;
 
         if (charCon.isGrounded)
         {
             moveInput.y = -1f;
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Keyboard.current != null &&
+                Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 moveInput.y = jumpingPower;
                 jumpAgain = 2;
             }
         }
-        else
-        {
-            moveInput.y += Physics.gravity.y * gravityModifier * Time.deltaTime;
-        }
 
-        if (jumpAgain > 0 && Input.GetKeyDown(KeyCode.Space))
+        // Double jump
+        if (jumpAgain > 0 &&
+            Keyboard.current != null &&
+            Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             moveInput.y = jumpingPower;
             jumpAgain--;
@@ -84,35 +94,71 @@ public class PlayerController : MonoBehaviour
 
         charCon.Move(moveInput * Time.deltaTime);
 
-        float horizontalSpeed = new Vector3(charCon.velocity.x, 0, charCon.velocity.z).magnitude;
+        float horizontalSpeed = new Vector3(
+            charCon.velocity.x,
+            0f,
+            charCon.velocity.z
+        ).magnitude;
 
         if (anim != null)
+        {
             anim.SetFloat("moveSpeed", horizontalSpeed);
+        }
 
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
+        // Mouse camera movement
+        Vector2 mouseInput = Vector2.zero;
 
-        transform.Rotate(Vector3.up * mouseX * mouseSensitivity);
+        if (Mouse.current != null)
+        {
+            mouseInput = Mouse.current.delta.ReadValue()
+                         * mouseSensitivity
+                         * 0.01f;
+        }
+
+        transform.rotation = Quaternion.Euler(
+            transform.rotation.eulerAngles.x,
+            transform.rotation.eulerAngles.y + mouseInput.x,
+            transform.rotation.eulerAngles.z
+        );
 
         if (camTrans != null)
         {
-            camTrans.Rotate(Vector3.left * mouseY * mouseSensitivity);
+            camTrans.rotation = Quaternion.Euler(
+                camTrans.rotation.eulerAngles
+                + new Vector3(-mouseInput.y, 0f, 0f)
+            );
         }
 
-        if (bullet != null && firePoint != null && Input.GetMouseButtonDown(0))
+        // Shooting
+        if (Mouse.current != null &&
+            Mouse.current.leftButton.wasPressedThisFrame)
         {
+            if (bullet == null || firePoint == null || camTrans == null)
+                return;
+
             RaycastHit hit;
 
-            if (Physics.Raycast(camTrans.position, camTrans.forward, out hit))
+            if (Physics.Raycast(
+                camTrans.position,
+                camTrans.forward,
+                out hit
+            ))
             {
                 firePoint.LookAt(hit.point);
             }
             else
             {
-                firePoint.LookAt(camTrans.position + camTrans.forward * 30f);
+                firePoint.LookAt(
+                    camTrans.position
+                    + camTrans.forward * 30f
+                );
             }
 
-            Instantiate(bullet, firePoint.position, firePoint.rotation);
+            Instantiate(
+                bullet,
+                firePoint.position,
+                firePoint.rotation
+            );
         }
     }
 }
