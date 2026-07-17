@@ -46,13 +46,13 @@ public class PlayerHealthUI : MonoBehaviour
             newWidth
         );
 
-        // 下面两段只用于测试，合并的时候删除以下两段
+        // 下面两段只用于测试，K模拟掉血，G模拟使用蘑菇恢复。合并的时候删除以下两段
         if (Input.GetKeyDown(KeyCode.K))
         {
             TakeDamage(10f);
         }
 
-        if (Input.GetKeyDown(KeyCode.H))
+        if (Input.GetKeyDown(KeyCode.G))
         {
             Heal(30f);
         } 
