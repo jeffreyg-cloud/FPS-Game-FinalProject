@@ -14,6 +14,8 @@ public class PlayerHealthUI : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private float changeSpeed = 500f;
 
+    [SerializeField] private HealthTutorial healthTutorial;
+
     private float fullWidth;
     private float targetWidth;
 
@@ -69,6 +71,12 @@ public class PlayerHealthUI : MonoBehaviour
 
         UpdateTargetWidth();
         UpdateHealthText();
+
+        //ÐÂÔö
+        if (healthTutorial != null)
+        {
+            healthTutorial.ShowHealthTutorial();
+        }
     }
 
     public void Heal(float amount)
@@ -82,7 +90,10 @@ public class PlayerHealthUI : MonoBehaviour
 
         UpdateTargetWidth();
         UpdateHealthText();
+
     }
+
+
 
     public void SetHealth(float current, float maximum)
     {
