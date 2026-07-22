@@ -17,6 +17,11 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
     [Header("References")]
     [SerializeField] private Animator animator;
 
+    [Header("Projectile References")]
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private float targetHeightOffset = 1f;
+
     private Transform player;
     private NavMeshAgent agent;
 
@@ -174,5 +179,45 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
             transform.position,
             attackRange
         );
+    }
+
+    public void AnimationFireProjectile()
+    {
+        if (projectilePrefab == null)
+        {
+            Debug.LogWarning("Ranged Enemy ???? Projectile Prefab?");
+            return;
+        }
+
+        if (firePoint == null)
+        {
+            Debug.LogWarning("Ranged Enemy ???? Fire Point?");
+            return;
+        }
+
+        if (player == null)
+        {
+            return;
+        }
+
+        Vector3 targetPosition =
+            player.position + Vector3.up * targetHeightOffset;
+
+        Vector3 shootDirection =
+            targetPosition - firePoint.position;
+
+        GameObject projectileObject = Instantiate(
+            projectilePrefab,
+            firePoint.position,
+            Quaternion.LookRotation(shootDirection)
+        );
+
+        EnemyProjectile projectile =
+            projectileObject.GetComponent<EnemyProjectile>();
+
+        if (projectile != null)
+        {
+            projectile.Initialize(shootDirection);
+        }
     }
 }
