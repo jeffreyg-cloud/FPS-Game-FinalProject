@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
 
     public GameObject bullet;
     public Transform firePoint;
+    public WandManager wandManager;
 
     public float mouseSensitivity;
 
@@ -133,32 +134,71 @@ public class PlayerController : MonoBehaviour
         if (Mouse.current != null &&
             Mouse.current.leftButton.wasPressedThisFrame)
         {
-            if (bullet == null || firePoint == null || camTrans == null)
+            Debug.Log("Left Click!");
+
+            if (wandManager == null)
+            {
+                Debug.LogError("WandManager is NOT assigned!");
                 return;
+            }
+
+            WandStats wand = wandManager.ActiveWand;
+
+            if (wand == null)
+            {
+                Debug.LogError("Active wand is NULL — check WandManager's Wands array!");
+                return;
+            }
+
+            if (wand.effectPrefab == null)
+            {
+                Debug.LogError("Active wand's Effect Prefab is NOT assigned!");
+                return;
+            }
+
+            if (wand.firePoint == null)
+            {
+                Debug.LogError("Active wand's Fire Point is NOT assigned!");
+                return;
+            }
+
+            if (camTrans == null)
+            {
+                Debug.LogError("Camera Transform is NOT assigned!");
+                return;
+            }
+
+            if (!wandManager.TrySpendMana(wand.manaCost))
+            {
+                Debug.Log("Not enough mana!");
+                return;
+            }
 
             RaycastHit hit;
 
-            if (Physics.Raycast(
-                camTrans.position,
-                camTrans.forward,
-                out hit
-            ))
+            if (Physics.Raycast(camTrans.position, camTrans.forward, out hit))
             {
-                firePoint.LookAt(hit.point);
+                wand.firePoint.LookAt(hit.point);
             }
             else
             {
-                firePoint.LookAt(
-                    camTrans.position
-                    + camTrans.forward * 30f
-                );
+                wand.firePoint.LookAt(camTrans.position + camTrans.forward * 30f);
             }
 
-            Instantiate(
-                bullet,
-                firePoint.position,
-                firePoint.rotation
+            GameObject newBullet = Instantiate(
+                wand.effectPrefab,
+                wand.firePoint.position,
+                wand.firePoint.rotation
             );
+
+            if (wand.wandAnimator != null)
+            {
+                wand.wandAnimator.SetTrigger("Attack");
+            }
+
+            Debug.Log("Bullet spawned at: " + newBullet.transform.position);
         }
+
     }
+
 }
