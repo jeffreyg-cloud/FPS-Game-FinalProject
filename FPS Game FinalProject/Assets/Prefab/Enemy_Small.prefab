@@ -117,8 +117,6 @@ GameObject:
   - component: {fileID: 4890698522323230697}
   - component: {fileID: 1113715940140540900}
   - component: {fileID: 658046679803390690}
-  - component: {fileID: 2965028244978231545}
-  - component: {fileID: 4396788969601105021}
   - component: {fileID: 5469022099586604474}
   m_Layer: 0
   m_Name: Enemy_Small
@@ -240,41 +238,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &2965028244978231545
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3760394633901682965}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49b9ef2cf3f2ac847aad8355fbd599a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
-  maxHealth: 100
-  damage: 10
-  attackInterval: 1.2
-  movementSpeed: 3.5
-  detectionRange: 12
-  attackRange: 1.8
---- !u!114 &4396788969601105021
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3760394633901682965}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7aaec5ea60dbad244801e98ce3e3d73e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
-  player: {fileID: 0}
-  movementSpeed: 3.5
-  detectionRange: 12
-  attackRange: 1.8
-  attackInterval: 1.2
 --- !u!114 &5469022099586604474
 MonoBehaviour:
   m_ObjectHideFlags: 0
