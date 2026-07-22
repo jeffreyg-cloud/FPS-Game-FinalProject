@@ -133,32 +133,45 @@ public class PlayerController : MonoBehaviour
         if (Mouse.current != null &&
             Mouse.current.leftButton.wasPressedThisFrame)
         {
-            if (bullet == null || firePoint == null || camTrans == null)
+            Debug.Log("Left Click!");
+
+            if (bullet == null)
+            {
+                Debug.LogError("Bullet prefab is NOT assigned!");
                 return;
+            }
+
+            if (firePoint == null)
+            {
+                Debug.LogError("FirePoint is NOT assigned!");
+                return;
+            }
+
+            if (camTrans == null)
+            {
+                Debug.LogError("Camera Transform is NOT assigned!");
+                return;
+            }
 
             RaycastHit hit;
 
-            if (Physics.Raycast(
-                camTrans.position,
-                camTrans.forward,
-                out hit
-            ))
+            if (Physics.Raycast(camTrans.position, camTrans.forward, out hit))
             {
                 firePoint.LookAt(hit.point);
             }
             else
             {
-                firePoint.LookAt(
-                    camTrans.position
-                    + camTrans.forward * 30f
-                );
+                firePoint.LookAt(camTrans.position + camTrans.forward * 30f);
             }
 
-            Instantiate(
+            GameObject newBullet = Instantiate(
                 bullet,
                 firePoint.position,
                 firePoint.rotation
             );
+
+            Debug.Log("Bullet spawned at: " + newBullet.transform.position);
         }
     }
+    
 }
