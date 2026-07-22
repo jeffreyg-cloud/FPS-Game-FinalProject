@@ -4,7 +4,7 @@ using UnityEngine;
 public class EnemyProjectile : MonoBehaviour
 {
     [Header("Projectile Settings")]
-    [SerializeField] private float speed = 12f;
+    [SerializeField] private float speed = 10f;
     [SerializeField] private float damage = 10f;
     [SerializeField] private float lifeTime = 5f;
 
@@ -25,7 +25,12 @@ public class EnemyProjectile : MonoBehaviour
     public void Initialize(Vector3 direction)
     {
         moveDirection = direction.normalized;
-        transform.forward = moveDirection;
+
+        if (moveDirection.sqrMagnitude > 0.001f)
+        {
+            transform.rotation =
+                Quaternion.LookRotation(moveDirection);
+        }
     }
 
     private void FixedUpdate()
@@ -35,7 +40,8 @@ public class EnemyProjectile : MonoBehaviour
             return;
         }
 
-        rb.linearVelocity = moveDirection * speed;
+        rb.linearVelocity =
+            moveDirection * speed;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -45,21 +51,29 @@ public class EnemyProjectile : MonoBehaviour
             return;
         }
 
-        // ?????? Enemy?
+        // Bullet ?? Enemy ????? Enemy ????
         if (other.CompareTag("Enemy"))
         {
             return;
         }
 
-        PlayerHealthUI playerHealth =
-            other.GetComponentInParent<PlayerHealthUI>();
-
-        if (playerHealth != null)
+        if (other.CompareTag("Player"))
         {
             hasHit = true;
-            playerHealth.TakeDamage(damage);
 
-            Debug.Log($"?????? {damage} ???");
+            PlayerHealthUI healthUI =
+                FindFirstObjectByType<PlayerHealthUI>();
+
+            if (healthUI != null)
+            {
+                healthUI.TakeDamage(damage);
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "?????? PlayerHealthUI?"
+                );
+            }
 
             Destroy(gameObject);
             return;

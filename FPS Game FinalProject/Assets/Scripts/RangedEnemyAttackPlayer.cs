@@ -1,15 +1,27 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class RangedEnemyAttackPlayer : MonoBehaviour
 {
-    [Header("Range Settings")]
+    [Header("Detection Settings")]
     [SerializeField] private float detectionRange = 15f;
     [SerializeField] private float attackRange = 8f;
 
     [Header("Attack Settings")]
     [SerializeField] private float attackCooldown = 2f;
+
+    // Attack ???????????? Bullet?
+    // ?????????????
+    [SerializeField] private float fireDelay = 0.3f;
+
+    [Header("Projectile Settings")]
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform firePoint;
+
+    // ? Bullet ?? Player ???????????
+    [SerializeField] private float targetHeightOffset = 1f;
 
     [Header("Rotation")]
     [SerializeField] private float rotationSpeed = 8f;
@@ -17,16 +29,18 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
     [Header("References")]
     [SerializeField] private Animator animator;
 
-    [Header("Projectile References")]
-    [SerializeField] private GameObject projectilePrefab;
-    [SerializeField] private Transform firePoint;
-    [SerializeField] private float targetHeightOffset = 1f;
-
     private Transform player;
     private NavMeshAgent agent;
 
-    private float nextAttackTime;
     private bool hasDetectedPlayer;
+    private bool isAttacking;
+    private float nextAttackTime;
+
+    private static readonly int SpeedHash =
+        Animator.StringToHash("Speed");
+
+    private static readonly int AttackHash =
+        Animator.StringToHash("Attack");
 
     private void Awake()
     {
@@ -54,12 +68,18 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
             );
         }
 
+        // Enemy ????????????
         agent.stoppingDistance = attackRange * 0.9f;
     }
 
     private void Update()
     {
-        if (player == null || !agent.isOnNavMesh)
+        if (player == null)
+        {
+            return;
+        }
+
+        if (!agent.enabled || !agent.isOnNavMesh)
         {
             return;
         }
@@ -69,6 +89,7 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
             player.position
         );
 
+        // ???????????Enemy ????? Player?
         if (!hasDetectedPlayer &&
             distanceToPlayer <= detectionRange)
         {
@@ -78,7 +99,7 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
         if (!hasDetectedPlayer)
         {
             StopMoving();
-            UpdateMovementAnimation();
+            UpdateAnimation();
             return;
         }
 
@@ -91,11 +112,17 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
             FollowPlayer();
         }
 
-        UpdateMovementAnimation();
+        UpdateAnimation();
     }
 
     private void FollowPlayer()
     {
+        // Attack Coroutine ???????????
+        if (isAttacking)
+        {
+            return;
+        }
+
         agent.isStopped = false;
         agent.SetDestination(player.position);
     }
@@ -105,27 +132,97 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
         StopMoving();
         FacePlayer();
 
+        if (isAttacking)
+        {
+            return;
+        }
+
         if (Time.time < nextAttackTime)
         {
             return;
         }
+
+        StartCoroutine(AttackRoutine());
+    }
+
+    private IEnumerator AttackRoutine()
+    {
+        isAttacking = true;
 
         nextAttackTime =
             Time.time + attackCooldown;
 
         if (animator != null)
         {
-            animator.SetTrigger("Attack");
+            animator.ResetTrigger(AttackHash);
+            animator.SetTrigger(AttackHash);
         }
+
+        // ??????????????
+        yield return new WaitForSeconds(fireDelay);
+
+        // ??????? Player ???????
+        if (player != null)
+        {
+            FireProjectile();
+        }
+
+        // ???????????
+        float remainingTime =
+            Mathf.Max(0f, attackCooldown - fireDelay);
+
+        yield return new WaitForSeconds(remainingTime);
+
+        isAttacking = false;
     }
 
-    private void StopMoving()
+    private void FireProjectile()
     {
-        agent.isStopped = true;
-
-        if (agent.hasPath)
+        if (projectilePrefab == null)
         {
-            agent.ResetPath();
+            Debug.LogError(
+                "Projectile Prefab ?????"
+            );
+            return;
+        }
+
+        if (firePoint == null)
+        {
+            Debug.LogError(
+                "FirePoint ?????"
+            );
+            return;
+        }
+
+        Vector3 targetPosition =
+            player.position + Vector3.up * targetHeightOffset;
+
+        Vector3 shootDirection =
+            targetPosition - firePoint.position;
+
+        if (shootDirection.sqrMagnitude <= 0.001f)
+        {
+            return;
+        }
+
+        GameObject projectileObject = Instantiate(
+            projectilePrefab,
+            firePoint.position,
+            Quaternion.LookRotation(shootDirection.normalized)
+        );
+
+        EnemyProjectile projectile =
+            projectileObject.GetComponent<EnemyProjectile>();
+
+        if (projectile != null)
+        {
+            projectile.Initialize(shootDirection);
+        }
+        else
+        {
+            Debug.LogError(
+                "Enemy Bullet Prefab ??? EnemyProjectile ???"
+            );
         }
     }
 
@@ -136,7 +233,7 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
 
         direction.y = 0f;
 
-        if (direction.sqrMagnitude <= 0.01f)
+        if (direction.sqrMagnitude <= 0.001f)
         {
             return;
         }
@@ -151,16 +248,33 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
         );
     }
 
-    private void UpdateMovementAnimation()
+    private void StopMoving()
+    {
+        if (!agent.enabled || !agent.isOnNavMesh)
+        {
+            return;
+        }
+
+        agent.isStopped = true;
+
+        if (agent.hasPath)
+        {
+            agent.ResetPath();
+        }
+    }
+
+    private void UpdateAnimation()
     {
         if (animator == null)
         {
             return;
         }
 
+        float movementSpeed = agent.velocity.magnitude;
+
         animator.SetFloat(
-            "Speed",
-            agent.velocity.magnitude,
+            SpeedHash,
+            movementSpeed,
             0.1f,
             Time.deltaTime
         );
@@ -169,55 +283,17 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
+
         Gizmos.DrawWireSphere(
             transform.position,
             detectionRange
         );
 
         Gizmos.color = Color.red;
+
         Gizmos.DrawWireSphere(
             transform.position,
             attackRange
         );
-    }
-
-    public void AnimationFireProjectile()
-    {
-        if (projectilePrefab == null)
-        {
-            Debug.LogWarning("Ranged Enemy ???? Projectile Prefab?");
-            return;
-        }
-
-        if (firePoint == null)
-        {
-            Debug.LogWarning("Ranged Enemy ???? Fire Point?");
-            return;
-        }
-
-        if (player == null)
-        {
-            return;
-        }
-
-        Vector3 targetPosition =
-            player.position + Vector3.up * targetHeightOffset;
-
-        Vector3 shootDirection =
-            targetPosition - firePoint.position;
-
-        GameObject projectileObject = Instantiate(
-            projectilePrefab,
-            firePoint.position,
-            Quaternion.LookRotation(shootDirection)
-        );
-
-        EnemyProjectile projectile =
-            projectileObject.GetComponent<EnemyProjectile>();
-
-        if (projectile != null)
-        {
-            projectile.Initialize(shootDirection);
-        }
     }
 }
