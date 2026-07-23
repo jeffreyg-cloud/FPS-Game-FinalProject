@@ -2,25 +2,38 @@ using UnityEngine;
 
 public class Fireball : MonoBehaviour
 {
-    public float speed = 12f;
-    public float destroyTime = 2f;
+    [Header("Fire Settings")]
+    public float speed = 15f;
+    public float lifeTime = 5f;
 
-    void Start()
+    private void Start()
     {
-        Destroy(gameObject, destroyTime);
+        // Destroy automatically after a few seconds
+        Destroy(gameObject, lifeTime);
     }
 
-    void Update()
+    private void Update()
     {
+        // Move forward
         transform.position += transform.forward * speed * Time.deltaTime;
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        // Hit Player
+        if (other.CompareTag("GameController"))
+        {
+            Debug.Log("Player Hit!");
+
+            // TODO: Damage player here
+
+            Destroy(gameObject);
+        }
+
+        // Hit Ground
         if (other.CompareTag("ground"))
         {
             Destroy(gameObject);
         }
     }
 }
-

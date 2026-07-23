@@ -3,51 +3,42 @@ using System.Collections;
 
 public class DragonShoot : MonoBehaviour
 {
-    [Header("References")]
     public GameObject firePrefab;
     public Transform firePoint;
 
-    [Header("Fire Settings")]
-    public float fireInterval = 0.15f;      // Change this in Inspector
-    public float shootDownAngle = -45f;
+    public float fireInterval = 2f;
 
-    private bool canShoot = true;
+    private bool canShoot = false;
 
-    void Start()
+    private Coroutine fireRoutine;
+
+    public void StartBreathing()
     {
-        StartCoroutine(BreathFire());
-    }
-
-    void Update()
-    {
-        // Press F to stop spawning new fire
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            canShoot = false;
-        }
-
-        // Press G to resume spawning
-        if (Input.GetKeyDown(KeyCode.G))
+        if (fireRoutine == null)
         {
             canShoot = true;
+            fireRoutine = StartCoroutine(BreathFire());
+        }
+    }
+
+    public void StopBreathing()
+    {
+        canShoot = false;
+
+        if (fireRoutine != null)
+        {
+            StopCoroutine(fireRoutine);
+            fireRoutine = null;
         }
     }
 
     IEnumerator BreathFire()
     {
-        while (true)
+        while (canShoot)
         {
-            if (canShoot)
-            {
-                Quaternion shootRotation =
-                    firePoint.rotation * Quaternion.Euler(shootDownAngle, 0f, 0f);
-
-                Instantiate(
-                    firePrefab,
-                    firePoint.position,
-                    shootRotation
-                );
-            }
+            Instantiate(firePrefab,
+                        firePoint.position,
+                        firePoint.rotation);
 
             yield return new WaitForSeconds(fireInterval);
         }
