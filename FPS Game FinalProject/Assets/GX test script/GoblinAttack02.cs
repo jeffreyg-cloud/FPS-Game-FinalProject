@@ -5,27 +5,28 @@ using System.Collections;
 [RequireComponent(typeof(NavMeshAgent))]
 public class GoblinAttack02 : MonoBehaviour
 {
-    [Header("Follow Settings")]
-    [SerializeField] private float detectionRange = 10f;
-    [SerializeField] private float attackRange = 5f;
+    [Header("Detection")]
+    public float detectionRange = 15f;
+    public float attackRange = 5f;
 
-    [Header("Attack Settings")]
-    [SerializeField] private float attackCooldown = 3f;
-    [SerializeField] private float fireDelay = 1f;
+    [Header("Attack")]
+    public float attackCooldown = 3f;
+    public float fireDelay = 1f;
 
     [Header("References")]
-    [SerializeField] private Animator animator;
-    [SerializeField] private GameObject firePrefab;
-    [SerializeField] private Transform firePoint;
+    public Animator animator;
+    public GameObject firePrefab;
+    public Transform firePoint;
 
     private Transform player;
     private NavMeshAgent agent;
 
     private bool hasDetectedPlayer = false;
     private bool isAttacking = false;
+    private bool hasShot = false;
     private float nextAttackTime = 0f;
 
-    private void Awake()
+    void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
 
@@ -33,21 +34,19 @@ public class GoblinAttack02 : MonoBehaviour
             animator = GetComponentInChildren<Animator>();
     }
 
-    private void Start()
+    void Start()
     {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
 
         if (playerObj != null)
-        {
             player = playerObj.transform;
-        }
         else
-        {
-            Debug.LogError("Player with tag 'Player' not found!");
-        }
+            Debug.LogError("Player not found!");
+
+        agent.stoppingDistance = attackRange;
     }
 
-    private void Update()
+    void Update()
     {
         if (player == null || !agent.isOnNavMesh)
             return;
@@ -60,17 +59,32 @@ public class GoblinAttack02 : MonoBehaviour
             hasDetectedPlayer = true;
         }
 
+        // Idle
         if (!hasDetectedPlayer)
         {
-            StopMoving();
-            UpdateMovementAnimation();
+            agent.isStopped = true;
+            animator.SetBool("IsRunning", false);
             return;
         }
 
-        // Attack
-        if (distance <= attackRange)
+        // Chase
+        if (distance > attackRange)
         {
-            StopMoving();
+            agent.isStopped = false;
+            agent.SetDestination(player.position);
+
+            animator.SetBool("IsRunning", true);
+        }
+        // Attack
+        else
+        {
+            agent.isStopped = true;
+
+            if (agent.hasPath)
+                agent.ResetPath();
+
+            animator.SetBool("IsRunning", false);
+
             FacePlayer();
 
             if (!isAttacking && Time.time >= nextAttackTime)
@@ -78,70 +92,54 @@ public class GoblinAttack02 : MonoBehaviour
                 StartCoroutine(AttackRoutine());
             }
         }
-        // Chase
-        else
-        {
-            agent.isStopped = false;
-            agent.SetDestination(player.position);
-        }
-
-        UpdateMovementAnimation();
     }
 
     IEnumerator AttackRoutine()
     {
         isAttacking = true;
+        hasShot = false;
+
         nextAttackTime = Time.time + attackCooldown;
 
-        if (animator != null)
-        {
-            animator.SetTrigger("Attack");
-        }
+        animator.SetTrigger("Attack");
 
-        // Wait until the goblin opens its mouth
         yield return new WaitForSeconds(fireDelay);
 
-        ShootFire();
+        if (!hasShot)
+        {
+            ShootFire();
+            hasShot = true;
+        }
 
-        yield return new WaitForSeconds(attackCooldown - fireDelay);
+        yield return new WaitForSeconds(attackCooldown);
 
         isAttacking = false;
     }
 
-    private void ShootFire()
+    void ShootFire()
     {
         if (firePrefab == null || firePoint == null)
-        {
-            Debug.LogWarning("Fire Prefab or Fire Point is missing!");
             return;
-        }
 
-        Instantiate(
+        GameObject fire = Instantiate(
             firePrefab,
             firePoint.position,
             firePoint.rotation
         );
+
+        // Destroy after 1 second
+        Destroy(fire, 1f);
     }
 
-    private void StopMoving()
+    void FacePlayer()
     {
-        agent.isStopped = true;
+        Vector3 dir = player.position - transform.position;
+        dir.y = 0;
 
-        if (agent.hasPath)
-        {
-            agent.ResetPath();
-        }
-    }
-
-    private void FacePlayer()
-    {
-        Vector3 direction = player.position - transform.position;
-        direction.y = 0f;
-
-        if (direction.sqrMagnitude < 0.01f)
+        if (dir.sqrMagnitude < 0.01f)
             return;
 
-        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized);
+        Quaternion targetRotation = Quaternion.LookRotation(dir);
 
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
@@ -150,15 +148,7 @@ public class GoblinAttack02 : MonoBehaviour
         );
     }
 
-    private void UpdateMovementAnimation()
-    {
-        if (animator == null)
-            return;
-
-        animator.SetFloat("Speed", agent.velocity.magnitude);
-    }
-
-    private void OnDrawGizmosSelected()
+    void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
