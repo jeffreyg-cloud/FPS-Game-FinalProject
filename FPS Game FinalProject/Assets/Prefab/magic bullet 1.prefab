@@ -14566,7 +14566,6 @@ GameObject:
   - component: {fileID: 4217266059994575959}
   - component: {fileID: 4588501615696709229}
   - component: {fileID: 1803795238420724300}
-  - component: {fileID: 3705325009378657944}
   m_Layer: 0
   m_Name: magic bullet 1
   m_TagString: Untagged
@@ -19513,19 +19512,3 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &3705325009378657944
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7826991411606810249}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5227024f7a1e14a46806b4b33684a8cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BulletController
-  moveSpeed: 15
-  lifeTime: 2
-  rb: {fileID: 1803795238420724300}
-  impactEffect: {fileID: 8953504349242707561, guid: 6c0f7c89e7c1054478b9acc0ab003a2c, type: 3}
