@@ -21,6 +21,11 @@ public class GoblinAttack02 : MonoBehaviour
     private Transform player;
     private NavMeshAgent agent;
 
+    private PlayerHealthUI playerHealthUI;
+
+    [Header("Damage")]
+    public float attackDamage = 10f;
+
     private bool hasDetectedPlayer = false;
     private bool isAttacking = false;
     private bool hasShot = false;
@@ -44,6 +49,7 @@ public class GoblinAttack02 : MonoBehaviour
             Debug.LogError("Player not found!");
 
         agent.stoppingDistance = attackRange;
+        playerHealthUI = FindFirstObjectByType<PlayerHealthUI>();
     }
 
     void Update()
@@ -105,6 +111,8 @@ public class GoblinAttack02 : MonoBehaviour
 
         yield return new WaitForSeconds(fireDelay);
 
+        TryDamagePlayer();
+
         if (!hasShot)
         {
             ShootFire();
@@ -129,6 +137,41 @@ public class GoblinAttack02 : MonoBehaviour
 
         // Destroy after 1 second
         Destroy(fire, 1f);
+    }
+    private void TryDamagePlayer()
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        if (playerHealthUI == null)
+        {
+            Debug.LogWarning(
+                gameObject.name +
+                " cannot damage Player because PlayerHealthUI was not found."
+            );
+
+            return;
+        }
+
+        float distanceToPlayer = Vector3.Distance(
+            transform.position,
+            player.position
+        );
+
+        // Only damage if the player is still inside attack range
+        if (distanceToPlayer <= attackRange)
+        {
+            playerHealthUI.TakeDamage(attackDamage);
+
+            Debug.Log(
+                gameObject.name +
+                " dealt " +
+                attackDamage +
+                " damage to Player."
+            );
+        }
     }
 
     void FacePlayer()
