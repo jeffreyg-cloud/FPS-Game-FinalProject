@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2959997796859918594}
   - component: {fileID: 1181763058967700107}
   - component: {fileID: 2548288706819875923}
+  - component: {fileID: 4894721819648644653}
   m_Layer: 0
   m_Name: HP Gem
   m_TagString: Untagged
@@ -133,6 +134,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.3865647, y: 2.860247, z: 1.7612123}
   m_Center: {x: -0.039786886, y: 0.042720243, z: -0.5841664}
+--- !u!114 &4894721819648644653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4509737107310222687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8333e547c36ebd4da7dcf72cbcb2db5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialTrigger
+  tutorialUI: {fileID: 1846427394482447306, guid: f8c84e872bc59c743a4f6c542a917c6d, type: 3}
+  message: 'Press E to collect. '
+  displayTime: 5
+  triggerOnlyOnce: 0
 --- !u!1 &6187954640048056735
 GameObject:
   m_ObjectHideFlags: 0

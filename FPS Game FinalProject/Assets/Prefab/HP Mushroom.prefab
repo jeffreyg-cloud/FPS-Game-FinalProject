@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7572584058578523944}
   - component: {fileID: 5884648563815570678}
   - component: {fileID: 1923603548146591189}
+  - component: {fileID: 6594302484972974996}
   m_Layer: 0
   m_Name: HP Mushroom
   m_TagString: Untagged
@@ -131,6 +132,22 @@ MonoBehaviour:
   collectMessage: 'Mushroom collected.
 
     They are now stored in your inventory.'
+--- !u!114 &6594302484972974996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1716425279558961038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8333e547c36ebd4da7dcf72cbcb2db5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialTrigger
+  tutorialUI: {fileID: 1846427394482447306, guid: f8c84e872bc59c743a4f6c542a917c6d, type: 3}
+  message: 'Press E to pick up. '
+  displayTime: 5
+  triggerOnlyOnce: 0
 --- !u!1 &4402538443954115802
 GameObject:
   m_ObjectHideFlags: 0
