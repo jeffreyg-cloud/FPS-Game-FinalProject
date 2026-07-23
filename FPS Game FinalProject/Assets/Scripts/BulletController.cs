@@ -5,21 +5,18 @@ public class BulletController : MonoBehaviour
     public float moveSpeed, lifeTime;
     public Rigidbody rb;
     public GameObject impactEffect;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
-
-
-
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         rb.linearVelocity = transform.forward * moveSpeed;
 
         lifeTime -= Time.deltaTime;
-
         if (lifeTime <= 0)
         {
             Destroy(gameObject);
@@ -28,15 +25,14 @@ public class BulletController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        //if (other.CompareTag("Enemy"))
-       // {
-        //    other.transform.parent.GetComponent<EnemyHealthController>().DamageEnemy();
-       // }
-        Destroy(gameObject);
+        // Ignore the player/wand itself so it doesn't blow up on spawn
+        if (other.CompareTag("Player") || other.CompareTag("Weapon"))
+            return;
+
         float offset = 0.7f;
         Vector3 newPosition = transform.position - transform.forward * offset;
         Instantiate(impactEffect, newPosition, transform.rotation);
 
-        Destroy(impactEffect, 0.2f);
+        Destroy(gameObject);
     }
 }
