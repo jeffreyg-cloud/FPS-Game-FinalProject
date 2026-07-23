@@ -1100,7 +1100,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 365b0fbe9dbd172479b66e61709515b4, type: 3}
---- !u!1001 &1497062780158985401
+--- !u!1001 &2024181360981958789
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -1108,49 +1108,49 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2892366749230933851, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
-      propertyPath: m_Name
-      value: DragonEnemy
-      objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 75.7
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalPosition.z
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalRotation.x
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalRotation.y
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5295559171202248344, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+    - target: {fileID: 1884831440141467709, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8510033903365946119, guid: 751a7f9e8149121488e3886b7257293d, type: 3}
+      propertyPath: m_Name
+      value: DragonEnemy
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1226,4 +1226,4 @@ SceneRoots:
   - {fileID: 112435633}
   - {fileID: 1775034613}
   - {fileID: 834726262}
-  - {fileID: 1497062780158985401}
+  - {fileID: 2024181360981958789}
