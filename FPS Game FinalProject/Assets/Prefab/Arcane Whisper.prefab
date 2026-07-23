@@ -219,6 +219,10 @@ MonoBehaviour:
   range: 35
   projectileSpeed: 15
   bulletHitRadius: 0.15
+  wandMesh: {fileID: 2364571310568191644}
+  swingAngle: 40
+  swingDuration: 0.15
+  returnDuration: 0.15
 --- !u!1 &6886381613899725230
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 // Attach alongside WandStats on the "Starfall Scepter" wand GameObject.
 [RequireComponent(typeof(WandStats))]
-public class StarfallScepterWeapon : MonoBehaviour
+public class StarfallScepter: MonoBehaviour
 {
     [Header("Projectile")]
     public GameObject bulletPrefab;
@@ -21,12 +21,24 @@ public class StarfallScepterWeapon : MonoBehaviour
     public float explosionRadius = 4f;
     public float knockbackForce = 5f;
 
+    [Header("Swing")]
+    public Transform wandMesh;      // the visual mesh child, NOT firePoint
+    public float swingAngle = 40f;
+    public float swingDuration = 0.15f;
+    public float returnDuration = 0.15f;
+
     private WandStats stats;
     private float nextCastTime;
+
+    private Quaternion meshStartRotation;
+    private Coroutine swingRoutine;
 
     private void Start()
     {
         stats = GetComponent<WandStats>();
+
+        if (wandMesh != null)
+            meshStartRotation = wandMesh.localRotation;
     }
 
     private void Update()
@@ -64,9 +76,17 @@ public class StarfallScepterWeapon : MonoBehaviour
 
         nextCastTime = Time.time + cooldown;
 
+        AimFirePointAtCrosshair();
+
         if (stats.wandAnimator != null)
         {
             stats.wandAnimator.SetTrigger("Cast");
+        }
+
+        if (wandMesh != null)
+        {
+            if (swingRoutine != null) StopCoroutine(swingRoutine);
+            swingRoutine = StartCoroutine(SwingRoutine());
         }
 
         if (stats.effectPrefab != null)
@@ -90,6 +110,45 @@ public class StarfallScepterWeapon : MonoBehaviour
                 stats.firePoint.forward
             )
         );
+    }
+
+    private void AimFirePointAtCrosshair()
+    {
+        if (stats.camTrans == null || stats.firePoint == null) return;
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(stats.camTrans.position, stats.camTrans.forward, out hit, stats.maxAimDistance))
+        {
+            stats.firePoint.LookAt(hit.point);
+        }
+        else
+        {
+            stats.firePoint.LookAt(stats.camTrans.position + stats.camTrans.forward * stats.maxAimDistance);
+        }
+    }
+
+    private IEnumerator SwingRoutine()
+    {
+        Quaternion swingRotation = meshStartRotation * Quaternion.Euler(-swingAngle, 0f, 0f);
+
+        float t = 0f;
+        while (t < swingDuration)
+        {
+            t += Time.deltaTime;
+            wandMesh.localRotation = Quaternion.Slerp(meshStartRotation, swingRotation, t / swingDuration);
+            yield return null;
+        }
+
+        t = 0f;
+        while (t < returnDuration)
+        {
+            t += Time.deltaTime;
+            wandMesh.localRotation = Quaternion.Slerp(swingRotation, meshStartRotation, t / returnDuration);
+            yield return null;
+        }
+
+        wandMesh.localRotation = meshStartRotation;
     }
 
     private IEnumerator MoveBullet(
@@ -177,7 +236,6 @@ public class StarfallScepterWeapon : MonoBehaviour
             stats.hittableLayers
         );
 
-        // ????? Enemy ????? Collider ???????
         HashSet<EnemyHealth> damagedEnemies =
             new HashSet<EnemyHealth>();
 
