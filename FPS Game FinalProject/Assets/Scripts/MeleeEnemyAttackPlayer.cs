@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -9,15 +10,22 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
     [SerializeField] private float attackRange = 2f;
 
     [Header("Attack Settings")]
+    [SerializeField] private float attackDamage = 10f;
     [SerializeField] private float attackCooldown = 1.5f;
+
+    // Attack animation starts first, then damage happens after this delay.
+    [SerializeField] private float damageDelay = 0.4f;
 
     [Header("References")]
     [SerializeField] private Animator animator;
+    [SerializeField] private PlayerHealthUI playerHealthUI;
 
     private Transform player;
     private NavMeshAgent agent;
+
     private float nextAttackTime;
     private bool hasDetectedPlayer;
+    private bool isAttacking;
 
     private void Awake()
     {
@@ -37,12 +45,26 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
         if (playerObject != null)
         {
             player = playerObject.transform;
+
+            // Try to find PlayerHealthUI from the Player or its children.
+            if (playerHealthUI == null)
+            {
+                playerHealthUI =
+                    playerObject.GetComponentInChildren<PlayerHealthUI>();
+            }
         }
         else
         {
             Debug.LogError(
-                "Enemy ??? Player???? Player Tag?"
+                "Melee Enemy cannot find Player. Check whether the Player object has the Player tag."
             );
+        }
+
+        // Fallback if PlayerHealthUI is located on the Canvas.
+        if (playerHealthUI == null)
+        {
+            playerHealthUI =
+                FindFirstObjectByType<PlayerHealthUI>();
         }
 
         agent.stoppingDistance = attackRange * 0.8f;
@@ -50,7 +72,9 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
 
     private void Update()
     {
-        if (player == null || !agent.isOnNavMesh)
+        if (player == null ||
+            !agent.enabled ||
+            !agent.isOnNavMesh)
         {
             return;
         }
@@ -60,7 +84,7 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
             player.position
         );
 
-        // Enemy ????? Player ??????????
+        // Once the Player is detected, keep chasing them.
         if (!hasDetectedPlayer &&
             distanceToPlayer <= detectionRange)
         {
@@ -88,6 +112,11 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
 
     private void FollowPlayer()
     {
+        if (isAttacking)
+        {
+            return;
+        }
+
         agent.isStopped = false;
         agent.SetDestination(player.position);
     }
@@ -97,20 +126,84 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
         StopMoving();
         FacePlayer();
 
-        if (Time.time >= nextAttackTime)
+        if (!isAttacking &&
+            Time.time >= nextAttackTime)
         {
-            nextAttackTime =
-                Time.time + attackCooldown;
+            StartCoroutine(AttackRoutine());
+        }
+    }
 
-            if (animator != null)
-            {
-                animator.SetTrigger("Attack");
-            }
+    private IEnumerator AttackRoutine()
+    {
+        isAttacking = true;
+
+        nextAttackTime =
+            Time.time + attackCooldown;
+
+        if (animator != null)
+        {
+            animator.ResetTrigger("Attack");
+            animator.SetTrigger("Attack");
+        }
+
+        // Wait until the attack animation reaches the hit moment.
+        yield return new WaitForSeconds(damageDelay);
+
+        TryDamagePlayer();
+
+        // Prevent following until the attack cooldown has mostly completed.
+        float remainingCooldown =
+            Mathf.Max(0f, attackCooldown - damageDelay);
+
+        yield return new WaitForSeconds(remainingCooldown);
+
+        isAttacking = false;
+    }
+
+    private void TryDamagePlayer()
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        if (playerHealthUI == null)
+        {
+            Debug.LogWarning(
+                gameObject.name +
+                " cannot damage Player because PlayerHealthUI was not found."
+            );
+
+            return;
+        }
+
+        float distanceToPlayer = Vector3.Distance(
+            transform.position,
+            player.position
+        );
+
+        // Check again because the Player may have moved away during the animation.
+        if (distanceToPlayer <= attackRange + 0.3f)
+        {
+            playerHealthUI.TakeDamage(attackDamage);
+
+            Debug.Log(
+                gameObject.name +
+                " dealt " +
+                attackDamage +
+                " damage to Player."
+            );
         }
     }
 
     private void StopMoving()
     {
+        if (!agent.enabled ||
+            !agent.isOnNavMesh)
+        {
+            return;
+        }
+
         agent.isStopped = true;
 
         if (agent.hasPath)

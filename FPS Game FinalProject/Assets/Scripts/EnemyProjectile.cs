@@ -4,9 +4,13 @@ using UnityEngine;
 public class EnemyProjectile : MonoBehaviour
 {
     [Header("Projectile Settings")]
-    [SerializeField] private float speed = 10f;
+    [SerializeField] private float speed = 8f;
     [SerializeField] private float damage = 10f;
     [SerializeField] private float lifeTime = 5f;
+
+    [Header("Explosion")]
+    [SerializeField] private GameObject explosionPrefab;
+    [SerializeField] private float explosionLifeTime = 2f;
 
     private Rigidbody rb;
     private Vector3 moveDirection;
@@ -15,6 +19,13 @@ public class EnemyProjectile : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+
+        rb.useGravity = false;
+        rb.collisionDetectionMode =
+            CollisionDetectionMode.ContinuousDynamic;
+
+        rb.interpolation =
+            RigidbodyInterpolation.Interpolate;
     }
 
     private void Start()
@@ -51,36 +62,75 @@ public class EnemyProjectile : MonoBehaviour
             return;
         }
 
-        // Bullet ?? Enemy ????? Enemy ????
+        // ???? Bullet ? Enemy ??? Enemy?
+        if (other.GetComponentInParent<RangedEnemyAttackPlayer>() != null)
+        {
+            return;
+        }
+
         if (other.CompareTag("Enemy"))
         {
             return;
         }
 
-        if (other.CompareTag("Player"))
+        hasHit = true;
+
+        bool hitPlayer =
+            other.CompareTag("Player") ||
+            other.transform.root.CompareTag("Player");
+
+        if (hitPlayer)
         {
-            hasHit = true;
-
-            PlayerHealthUI healthUI =
-                FindFirstObjectByType<PlayerHealthUI>();
-
-            if (healthUI != null)
-            {
-                healthUI.TakeDamage(damage);
-            }
-            else
-            {
-                Debug.LogWarning(
-                    "?????? PlayerHealthUI?"
-                );
-            }
-
-            Destroy(gameObject);
-            return;
+            DamagePlayer();
         }
 
-        // ???????????
-        hasHit = true;
+        Explode();
+    }
+
+    private void DamagePlayer()
+    {
+        PlayerHealthUI healthUI =
+            FindFirstObjectByType<PlayerHealthUI>();
+
+        if (healthUI != null)
+        {
+            healthUI.TakeDamage(damage);
+
+            Debug.Log(
+                $"Enemy Bullet ? Player ?? {damage} ????"
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "?????? PlayerHealthUI?"
+            );
+        }
+    }
+
+    private void Explode()
+    {
+        rb.linearVelocity = Vector3.zero;
+
+        if (explosionPrefab != null)
+        {
+            GameObject explosion = Instantiate(
+                explosionPrefab,
+                transform.position,
+                Quaternion.identity
+            );
+
+            // ???????? Stop Action = Destroy?
+            // ?????????????
+            Destroy(explosion, explosionLifeTime);
+        }
+        else
+        {
+            Debug.LogWarning(
+                "Enemy Bullet ???? Explosion Prefab?"
+            );
+        }
+
         Destroy(gameObject);
     }
 }

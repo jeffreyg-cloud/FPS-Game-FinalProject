@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,102 +7,241 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(WandStats))]
 public class StarfallScepterWeapon : MonoBehaviour
 {
-    public GameObject bulletPrefab;    // visual-only prefab, no script/collider needed
+    [Header("Projectile")]
+    public GameObject bulletPrefab;
     public GameObject explosionEffectPrefab;
+
+    [Header("Attack Settings")]
     public float cooldown = 1.5f;
     public float range = 25f;
     public float projectileSpeed = 15f;
     public float bulletHitRadius = 0.2f;
+
+    [Header("Explosion")]
     public float explosionRadius = 4f;
     public float knockbackForce = 5f;
 
     private WandStats stats;
     private float nextCastTime;
 
-    void Start()
+    private void Start()
     {
         stats = GetComponent<WandStats>();
     }
 
-    void Update()
+    private void Update()
     {
-        if (Mouse.current == null) return;
-        if (!Mouse.current.leftButton.wasPressedThisFrame) return; // single click
-        if (Time.time < nextCastTime) return;
+        if (Mouse.current == null)
+        {
+            return;
+        }
+
+        if (!Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            return;
+        }
+
+        if (Time.time < nextCastTime)
+        {
+            return;
+        }
 
         TryCast();
     }
 
-    void TryCast()
+    private void TryCast()
     {
-        if (stats.wandManager != null && !stats.wandManager.TrySpendMana(stats.manaCost)) return;
-        if (bulletPrefab == null || stats.firePoint == null) return;
+        if (stats.wandManager != null &&
+            !stats.wandManager.TrySpendMana(stats.manaCost))
+        {
+            return;
+        }
+
+        if (bulletPrefab == null || stats.firePoint == null)
+        {
+            return;
+        }
 
         nextCastTime = Time.time + cooldown;
 
-        if (stats.wandAnimator != null) stats.wandAnimator.SetTrigger("Cast");
-        if (stats.effectPrefab != null)
-            Instantiate(stats.effectPrefab, stats.firePoint.position, stats.firePoint.rotation);
+        if (stats.wandAnimator != null)
+        {
+            stats.wandAnimator.SetTrigger("Cast");
+        }
 
-        GameObject bulletGO = Instantiate(bulletPrefab, stats.firePoint.position, stats.firePoint.rotation);
-        StartCoroutine(MoveBullet(bulletGO, stats.firePoint.forward));
+        if (stats.effectPrefab != null)
+        {
+            Instantiate(
+                stats.effectPrefab,
+                stats.firePoint.position,
+                stats.firePoint.rotation
+            );
+        }
+
+        GameObject bulletGO = Instantiate(
+            bulletPrefab,
+            stats.firePoint.position,
+            stats.firePoint.rotation
+        );
+
+        StartCoroutine(
+            MoveBullet(
+                bulletGO,
+                stats.firePoint.forward
+            )
+        );
     }
 
-    // Moves the orb each frame and sphere-casts along the step it just took.
-    // On hit (or at max range), it explodes instead of dealing single-target damage.
-    IEnumerator MoveBullet(GameObject bulletGO, Vector3 direction)
+    private IEnumerator MoveBullet(
+        GameObject bulletGO,
+        Vector3 direction
+    )
     {
         float elapsed = 0f;
-        float lifeTime = range / Mathf.Max(projectileSpeed, 0.01f);
+
+        float lifeTime =
+            range / Mathf.Max(projectileSpeed, 0.01f);
+
+        direction = direction.normalized;
 
         while (elapsed < lifeTime)
         {
-            Vector3 prevPos = bulletGO.transform.position;
-            float step = projectileSpeed * Time.deltaTime;
-
-            if (Physics.SphereCast(prevPos, bulletHitRadius, direction, out RaycastHit hit, step, stats.hittableLayers))
+            if (bulletGO == null)
             {
-                bool isSelf = hit.collider.CompareTag("Player")
+                yield break;
+            }
+
+            Vector3 previousPosition =
+                bulletGO.transform.position;
+
+            float step =
+                projectileSpeed * Time.deltaTime;
+
+            if (Physics.SphereCast(
+                previousPosition,
+                bulletHitRadius,
+                direction,
+                out RaycastHit hit,
+                step,
+                stats.hittableLayers
+            ))
+            {
+                bool isSelf =
+                    hit.collider.CompareTag("Player")
                     || hit.collider.CompareTag("Weapon")
                     || hit.collider.transform.root.CompareTag("Player");
 
                 if (!isSelf)
                 {
+                    Vector3 explosionPosition = hit.point;
+
                     Destroy(bulletGO);
-                    Explode(hit.point);
+                    Explode(explosionPosition);
+
                     yield break;
                 }
             }
 
-            bulletGO.transform.position = prevPos + direction * step;
+            bulletGO.transform.position =
+                previousPosition + direction * step;
+
             elapsed += Time.deltaTime;
+
             yield return null;
         }
 
-        // Reached max range without hitting anything -> explode at final position anyway
-        Vector3 finalPos = bulletGO.transform.position;
-        Destroy(bulletGO);
-        Explode(finalPos);
+        if (bulletGO != null)
+        {
+            Vector3 finalPosition =
+                bulletGO.transform.position;
+
+            Destroy(bulletGO);
+            Explode(finalPosition);
+        }
     }
 
-    void Explode(Vector3 center)
+    private void Explode(Vector3 center)
     {
         if (explosionEffectPrefab != null)
-            Instantiate(explosionEffectPrefab, center, Quaternion.identity);
-
-        foreach (Collider col in Physics.OverlapSphere(center, explosionRadius, stats.hittableLayers))
         {
-            if (col.CompareTag("Player") || col.CompareTag("Weapon") || col.transform.root.CompareTag("Player"))
-                continue;
+            Instantiate(
+                explosionEffectPrefab,
+                center,
+                Quaternion.identity
+            );
+        }
 
-            col.SendMessage("TakeDamage", stats.damage, SendMessageOptions.DontRequireReceiver);
+        Collider[] colliders = Physics.OverlapSphere(
+            center,
+            explosionRadius,
+            stats.hittableLayers
+        );
 
-            Rigidbody rb = col.attachedRigidbody;
-            if (rb != null)
+        // ????? Enemy ????? Collider ???????
+        HashSet<EnemyHealth> damagedEnemies =
+            new HashSet<EnemyHealth>();
+
+        foreach (Collider col in colliders)
+        {
+            bool isPlayer =
+                col.CompareTag("Player")
+                || col.CompareTag("Weapon")
+                || col.transform.root.CompareTag("Player");
+
+            if (isPlayer)
             {
-                Vector3 dir = (col.transform.position - center).normalized;
-                rb.AddForce(dir * knockbackForce, ForceMode.Impulse);
+                continue;
+            }
+
+            EnemyHealth enemyHealth =
+                col.GetComponentInParent<EnemyHealth>();
+
+            if (enemyHealth != null &&
+                damagedEnemies.Add(enemyHealth))
+            {
+                enemyHealth.TakeDamage(stats.damage);
+
+                Debug.Log(
+                    "Starfall explosion damaged "
+                    + enemyHealth.gameObject.name
+                    + " for "
+                    + stats.damage
+                );
+            }
+
+            Rigidbody targetRigidbody =
+                col.attachedRigidbody;
+
+            if (targetRigidbody != null)
+            {
+                Vector3 knockbackDirection =
+                    col.transform.position - center;
+
+                knockbackDirection.y = 0.3f;
+
+                if (knockbackDirection.sqrMagnitude > 0.001f)
+                {
+                    knockbackDirection.Normalize();
+
+                    targetRigidbody.AddForce(
+                        knockbackDirection * knockbackForce,
+                        ForceMode.Impulse
+                    );
+                }
             }
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (stats == null || stats.firePoint == null)
+        {
+            return;
+        }
+
+        Gizmos.DrawWireSphere(
+            stats.firePoint.position,
+            explosionRadius
+        );
     }
 }

@@ -57,18 +57,43 @@ public class ArcaneWhisper : MonoBehaviour
             Vector3 prevPos = bulletGO.transform.position;
             float step = projectileSpeed * Time.deltaTime;
 
-            if (Physics.SphereCast(prevPos, bulletHitRadius, direction, out RaycastHit hit, step, stats.hittableLayers))
+            if (Physics.SphereCast(
+    prevPos,
+    bulletHitRadius,
+    direction,
+    out RaycastHit hit,
+    step,
+    stats.hittableLayers
+))
             {
-                bool isSelf = hit.collider.CompareTag("Player")
+                bool isSelf =
+                    hit.collider.CompareTag("Player")
                     || hit.collider.CompareTag("Weapon")
                     || hit.collider.transform.root.CompareTag("Player");
 
                 if (!isSelf)
                 {
-                    hit.collider.SendMessage("TakeDamage", stats.damage, SendMessageOptions.DontRequireReceiver);
+                    EnemyHealth enemyHealth =
+                        hit.collider.GetComponentInParent<EnemyHealth>();
+
+                    if (enemyHealth != null)
+                    {
+                        enemyHealth.TakeDamage(stats.damage);
+
+                        Debug.Log(
+                            "Wand hit enemy: "
+                            + enemyHealth.gameObject.name
+                        );
+                    }
 
                     if (impactEffectPrefab != null)
-                        Instantiate(impactEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+                    {
+                        Instantiate(
+                            impactEffectPrefab,
+                            hit.point,
+                            Quaternion.LookRotation(hit.normal)
+                        );
+                    }
 
                     Destroy(bulletGO);
                     yield break;
