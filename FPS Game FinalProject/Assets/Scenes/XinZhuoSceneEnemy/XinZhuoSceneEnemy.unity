@@ -487,6 +487,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1258075032}
     m_Modifications:
     - target: {fileID: 3439801319843762289, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
+      propertyPath: manaCost
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3439801319843762289, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
       propertyPath: wandManager
       value: 
       objectReference: {fileID: 927249292}
@@ -1334,6 +1338,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WeaponUI
       objectReference: {fileID: 0}
+    - target: {fileID: 7982134453500989094, guid: 365b0fbe9dbd172479b66e61709515b4, type: 3}
+      propertyPath: m_text
+      value: "AoE \xB7 10 MP"
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1411,6 +1419,14 @@ PrefabInstance:
     - target: {fileID: 3809781526781937322, guid: d2e93f40231895949b867be9bab94990, type: 3}
       propertyPath: m_Name
       value: DragonEnemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 8386921200500250015, guid: d2e93f40231895949b867be9bab94990, type: 3}
+      propertyPath: attackRange
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 8386921200500250015, guid: d2e93f40231895949b867be9bab94990, type: 3}
+      propertyPath: detectionRange
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8697076679342292680, guid: d2e93f40231895949b867be9bab94990, type: 3}
       propertyPath: m_LocalPosition.x

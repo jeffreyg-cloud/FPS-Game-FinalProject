@@ -97,7 +97,10 @@ public class EnemyProjectile : MonoBehaviour
             healthUI.TakeDamage(damage);
 
             Debug.Log(
-                $"Enemy Bullet ? Player ?? {damage} ????"
+                gameObject.name +
+                " dealt " +
+                damage +
+                " damage to Player."
             );
         }
         else

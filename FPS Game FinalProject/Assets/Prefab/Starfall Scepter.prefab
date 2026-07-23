@@ -284,7 +284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WandStats
   damage: 12
-  manaCost: 20
+  manaCost: 10
   firePoint: {fileID: 3379576196967009578}
   effectPrefab: {fileID: 0}
   wandAnimator: {fileID: 0}

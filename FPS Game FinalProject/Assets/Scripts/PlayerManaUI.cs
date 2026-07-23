@@ -11,95 +11,187 @@ public class PlayerManaUI : MonoBehaviour
     [SerializeField] private float maxMana = 100f;
     [SerializeField] private float currentMana = 100f;
 
-    [Header("Animation")]
+    [Header("Mana Regeneration")]
+    [SerializeField] private float manaRegenPerSecond = 2f;
+
+    [Header("UI Animation")]
     [SerializeField] private float changeSpeed = 500f;
 
     private float fullWidth;
     private float targetWidth;
 
+    public float CurrentMana => currentMana;
+    public float MaxMana => maxMana;
+    public bool IsFull => currentMana >= maxMana;
+
     private void Start()
     {
-        fullWidth = manaFill.sizeDelta.x;
-        currentMana = Mathf.Clamp(currentMana, 0f, maxMana);
+        maxMana = Mathf.Max(1f, maxMana);
 
-        UpdateTargetWidth();
-        UpdateManaText();
+        currentMana = Mathf.Clamp(
+            currentMana,
+            0f,
+            maxMana
+        );
+
+        if (manaFill != null)
+        {
+            fullWidth = manaFill.sizeDelta.x;
+        }
+        else
+        {
+            Debug.LogWarning(
+                "PlayerManaUI: Mana Fill has not been assigned."
+            );
+        }
+
+        UpdateManaUI(true);
     }
 
     private void Update()
     {
-        float currentWidth = manaFill.sizeDelta.x;
+        RegenerateMana();
+        AnimateManaBar();
+    }
 
-        float newWidth = Mathf.MoveTowards(
-            currentWidth,
-            targetWidth,
-            changeSpeed * Time.deltaTime
+    private void RegenerateMana()
+    {
+        if (currentMana >= maxMana)
+        {
+            return;
+        }
+
+        if (manaRegenPerSecond <= 0f)
+        {
+            return;
+        }
+
+        currentMana +=
+            manaRegenPerSecond * Time.deltaTime;
+
+        currentMana = Mathf.Clamp(
+            currentMana,
+            0f,
+            maxMana
         );
+
+        UpdateManaUI(false);
+    }
+
+    private void AnimateManaBar()
+    {
+        if (manaFill == null)
+        {
+            return;
+        }
+
+        float currentWidth =
+            manaFill.sizeDelta.x;
+
+        float newWidth =
+            Mathf.MoveTowards(
+                currentWidth,
+                targetWidth,
+                changeSpeed * Time.deltaTime
+            );
 
         manaFill.SetSizeWithCurrentAnchors(
             RectTransform.Axis.Horizontal,
             newWidth
         );
-
-        // ½öÓÃÓÚ UI ²âÊÔ£¬J = Ä£ÄâÎäÆ÷ 1 ¹¥»÷£¬L = Ä£ÄâÎäÆ÷ 2 ¹¥»÷£¬H = Ä£ÄâÊ¹ÓÃ±¦Ê¯»Ö¸´ 
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            UseMana(5f);
-        }
-
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            UseMana(20f);
-        }
-
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            RecoverMana(40f);
-        }
     }
 
     public bool UseMana(float amount)
     {
+        if (amount <= 0f)
+        {
+            return true;
+        }
+
         if (currentMana < amount)
         {
             return false;
         }
 
         currentMana -= amount;
-        currentMana = Mathf.Clamp(currentMana, 0f, maxMana);
 
-        UpdateTargetWidth();
-        UpdateManaText();
+        currentMana = Mathf.Clamp(
+            currentMana,
+            0f,
+            maxMana
+        );
+
+        UpdateManaUI(false);
 
         return true;
     }
 
     public void RecoverMana(float amount)
     {
+        if (amount <= 0f)
+        {
+            return;
+        }
+
         currentMana += amount;
-        currentMana = Mathf.Clamp(currentMana, 0f, maxMana);
 
-        UpdateTargetWidth();
-        UpdateManaText();
+        currentMana = Mathf.Clamp(
+            currentMana,
+            0f,
+            maxMana
+        );
+
+        UpdateManaUI(false);
     }
 
-    public void SetMana(float current, float maximum)
+    public void SetMana(
+        float current,
+        float maximum
+    )
     {
-        maxMana = Mathf.Max(1f, maximum);
-        currentMana = Mathf.Clamp(current, 0f, maxMana);
+        maxMana = Mathf.Max(
+            1f,
+            maximum
+        );
 
-        UpdateTargetWidth();
-        UpdateManaText();
+        currentMana = Mathf.Clamp(
+            current,
+            0f,
+            maxMana
+        );
+
+        UpdateManaUI(true);
     }
 
-    private void UpdateTargetWidth()
+    private void UpdateManaUI(bool updateImmediately)
     {
-        float manaPercent = currentMana / maxMana;
-        targetWidth = fullWidth * manaPercent;
+        float manaPercent =
+            Mathf.Clamp01(
+                currentMana / maxMana
+            );
+
+        targetWidth =
+            fullWidth * manaPercent;
+
+        if (updateImmediately &&
+            manaFill != null)
+        {
+            manaFill.SetSizeWithCurrentAnchors(
+                RectTransform.Axis.Horizontal,
+                targetWidth
+            );
+        }
+
+        UpdateManaText();
     }
 
     private void UpdateManaText()
     {
+        if (manaText == null)
+        {
+            return;
+        }
+
         manaText.text =
             Mathf.CeilToInt(currentMana)
             + " / "

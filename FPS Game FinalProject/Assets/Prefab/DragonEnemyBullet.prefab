@@ -153,8 +153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e45628a7803891d4abc4f13c133f3a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProjectile
-  speed: 8
-  damage: 10
-  lifeTime: 5
+  speed: 9
+  damage: 20
+  lifeTime: 7
   explosionPrefab: {fileID: 4180495489930588247, guid: 9e1f1550241cde946939f40fc2f73b83, type: 3}
   explosionLifeTime: 2
