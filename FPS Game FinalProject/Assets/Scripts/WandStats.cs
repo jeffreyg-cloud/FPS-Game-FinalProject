@@ -13,4 +13,8 @@ public class WandStats : MonoBehaviour
     public Animator wandAnimator;
     public WandManager wandManager;
     public LayerMask hittableLayers = ~0;
+
+    [Header("Aiming")]
+    public Transform camTrans; // drag your player camera here
+    public float maxAimDistance = 100f;
 }

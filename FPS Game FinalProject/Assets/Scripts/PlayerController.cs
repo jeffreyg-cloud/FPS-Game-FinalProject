@@ -24,6 +24,21 @@ public class PlayerController : MonoBehaviour
 
     public float mouseSensitivity;
 
+    [Header("Head Bob")]
+    public float bobFrequency = 10f;
+    public float bobAmplitude = 100.05f;
+    public float bobSideAmplitude = 0.025f;
+    public float bobSmooth = 5f;
+
+    private Vector3 camStartLocalPos;
+    private float bobTimer;
+
+    void Start()
+    {
+        if (camTrans != null)
+            camStartLocalPos = camTrans.localPosition;
+    }
+
     void Update()
     {
         float horizontal = 0f;
@@ -105,6 +120,8 @@ public class PlayerController : MonoBehaviour
         {
             anim.SetFloat("moveSpeed", horizontalSpeed);
         }
+
+        HeadBob(horizontalSpeed);
 
         // Mouse camera movement
         Vector2 mouseInput = Vector2.zero;
@@ -199,6 +216,32 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Bullet spawned at: " + newBullet.transform.position);
         }
 
+    }
+
+    void HeadBob(float horizontalSpeed)
+    {
+        if (camTrans == null) return;
+
+        bool isMoving = horizontalSpeed > 0.1f && charCon.isGrounded;
+
+        if (isMoving)
+        {
+            bobTimer += Time.deltaTime * bobFrequency;
+
+            float bobY = Mathf.Sin(bobTimer) * bobAmplitude;
+            float bobX = Mathf.Cos(bobTimer / 2f) * bobSideAmplitude;
+
+            camTrans.localPosition = camStartLocalPos + new Vector3(bobX, bobY, 0f);
+        }
+        else
+        {
+            bobTimer = 0f;
+            camTrans.localPosition = Vector3.Lerp(
+                camTrans.localPosition,
+                camStartLocalPos,
+                Time.deltaTime * bobSmooth
+            );
+        }
     }
 
 }
