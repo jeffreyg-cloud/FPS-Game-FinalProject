@@ -17,4 +17,26 @@ public class WandStats : MonoBehaviour
     public float maxAimDistance = 100f;
     [Header("Wand Identity")]
     public int wandID; // 0 = Arcane Whisper, 1 = Starfall Scepter, etc. Must match GameManager index.
+
+    [Header("Idle Bob")]
+    public bool enableIdleBob = true;
+    public float bobHeight = 0.02f;   // how far up/down it moves
+    public float bobSpeed = 1.5f;     // how fast it bobs
+
+    private Vector3 baseLocalPos;
+    private float bobTimer;
+
+    void Awake()
+    {
+        baseLocalPos = transform.localPosition;
+    }
+
+    void Update()
+    {
+        if (!enableIdleBob) return;
+
+        bobTimer += Time.deltaTime * bobSpeed;
+        float yOffset = Mathf.Sin(bobTimer) * bobHeight;
+        transform.localPosition = baseLocalPos + new Vector3(0f, yOffset, 0f);
+    }
 }

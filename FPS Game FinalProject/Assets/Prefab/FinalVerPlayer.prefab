@@ -68,9 +68,10 @@ GameObject:
   - component: {fileID: 2362707087983412877}
   - component: {fileID: 6587924670234966984}
   - component: {fileID: 2338901981498060952}
+  - component: {fileID: 6269393612473291849}
   m_Layer: 0
   m_Name: FinalVerPlayer
-  m_TagString: GameController
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -85,7 +86,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.31, z: -12.99}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4211161908782946391}
@@ -162,6 +163,20 @@ MonoBehaviour:
   activeIndex: 0
   manaUI: {fileID: 0}
   weaponUI: {fileID: 0}
+  unlocked: 
+--- !u!114 &6269393612473291849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7692484813749128830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d055ca2d1e1651c41b056195077b650f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerKey
+  hasKey: 0
 --- !u!1 &8677586367013204845
 GameObject:
   m_ObjectHideFlags: 0
@@ -285,6 +300,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 5145781606585785310}
     m_Modifications:
     - target: {fileID: 852510715499509118, guid: 4f67a680cee331143a5556a3a15548d9, type: 3}
+      propertyPath: camTrans
+      value: 
+      objectReference: {fileID: 5145781606585785310}
+    - target: {fileID: 852510715499509118, guid: 4f67a680cee331143a5556a3a15548d9, type: 3}
       propertyPath: wandManager
       value: 
       objectReference: {fileID: 2338901981498060952}
@@ -369,6 +388,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5145781606585785310}
     m_Modifications:
+    - target: {fileID: 3439801319843762289, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
+      propertyPath: wandID
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3439801319843762289, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
       propertyPath: camTrans
       value: 

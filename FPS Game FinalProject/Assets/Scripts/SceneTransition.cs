@@ -9,7 +9,7 @@ public class SceneTransition : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            SceneManager.LoadScene("XinZhuo");
+            SceneManager.LoadScene(sceneToLoad);
         }
     }
 }

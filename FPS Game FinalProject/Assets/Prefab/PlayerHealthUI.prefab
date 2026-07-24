@@ -55,6 +55,7 @@ MonoBehaviour:
   maxHealth: 100
   currentHealth: 100
   changeSpeed: 500
+  healthTutorial: {fileID: 0}
 --- !u!1 &2875338843371224179
 GameObject:
   m_ObjectHideFlags: 0

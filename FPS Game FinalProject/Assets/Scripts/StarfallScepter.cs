@@ -15,12 +15,20 @@ public class StarfallScepterWeapon : MonoBehaviour
     public float explosionRadius = 4f;
     public float knockbackForce = 5f;
 
+    [Header("Fire Tilt")]
+    public float tiltAngle = 45f;       // how far the wand tilts on cast
+    public float tiltOutTime = 0.05f;   // time to reach full tilt
+    public float tiltReturnTime = 0.15f; // time to return to normal
+
     private WandStats stats;
     private float nextCastTime;
+    private Quaternion baseLocalRotation;
+    private Coroutine tiltCoroutine;
 
     void Start()
     {
         stats = GetComponent<WandStats>();
+        baseLocalRotation = transform.localRotation;
     }
 
     void Update()
@@ -39,6 +47,14 @@ public class StarfallScepterWeapon : MonoBehaviour
 
         nextCastTime = Time.time + cooldown;
 
+        // Aim firePoint to face exactly the same direction as the camera,
+        // so the orb travels perfectly parallel to the crosshair
+        // regardless of where firePoint is physically positioned.
+        if (stats.camTrans != null)
+        {
+            stats.firePoint.rotation = Quaternion.LookRotation(stats.camTrans.forward);
+        }
+
         if (stats.wandAnimator != null) stats.wandAnimator.SetTrigger("Cast");
         if (stats.effectPrefab != null)
             Instantiate(stats.effectPrefab, stats.firePoint.position, stats.firePoint.rotation);
@@ -48,6 +64,35 @@ public class StarfallScepterWeapon : MonoBehaviour
         // keeps flying even if the player switches wands mid-flight.
         MonoBehaviour coroutineHost = stats.wandManager != null ? (MonoBehaviour)stats.wandManager : this;
         coroutineHost.StartCoroutine(MoveBullet(bulletGO, stats.firePoint.forward));
+
+        // Play the tilt effect on this wand's own transform
+        if (tiltCoroutine != null) StopCoroutine(tiltCoroutine);
+        tiltCoroutine = StartCoroutine(TiltOnFire());
+    }
+
+    IEnumerator TiltOnFire()
+    {
+        Quaternion tiltedRotation = baseLocalRotation * Quaternion.Euler(-tiltAngle, 0f, 0f);
+
+        // Tilt out
+        float t = 0f;
+        while (t < tiltOutTime)
+        {
+            t += Time.deltaTime;
+            transform.localRotation = Quaternion.Slerp(baseLocalRotation, tiltedRotation, t / tiltOutTime);
+            yield return null;
+        }
+        transform.localRotation = tiltedRotation;
+
+        // Return to normal
+        t = 0f;
+        while (t < tiltReturnTime)
+        {
+            t += Time.deltaTime;
+            transform.localRotation = Quaternion.Slerp(tiltedRotation, baseLocalRotation, t / tiltReturnTime);
+            yield return null;
+        }
+        transform.localRotation = baseLocalRotation;
     }
 
     // Moves the orb each frame and sphere-casts along the step it just took.
