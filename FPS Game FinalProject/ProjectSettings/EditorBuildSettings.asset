@@ -5,9 +5,6 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/JiaHui.unity
-    guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: 84c1125cb732a7e428024ddaca21d599
@@ -17,5 +14,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/XinZhuo.unity
     guid: 6dd9739adc902104fbe4063944bafcfd
+  - enabled: 1
+    path: Assets/Scenes/JiaHui.unity
+    guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
