@@ -1,5 +1,4 @@
 using UnityEngine;
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
@@ -8,21 +7,22 @@ public class GameManager : MonoBehaviour
     public bool[] unlockedWands;
     public int activeWand;
 
+    [Header("Player Stats")]
+    public float currentHealth = 100f;
+    public float maxHealth = 100f;
+    public float currentMana = 100f;
+    public float maxMana = 100f;
+
     private void Awake()
     {
-        // Singleton
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Number of wands in your game
             unlockedWands = new bool[2];
-
-            // Player starts with no wand
             unlockedWands[0] = false;
             unlockedWands[1] = false;
-
             activeWand = 0;
         }
         else

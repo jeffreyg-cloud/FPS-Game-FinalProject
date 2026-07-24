@@ -1,5 +1,4 @@
 using UnityEngine;
-
 // Pure data/shared references. Each wand also has ONE of the weapon
 // scripts below (ArcaneWhisperWeapon or StarfallScepterWeapon) which
 // owns its own firing logic.
@@ -13,8 +12,9 @@ public class WandStats : MonoBehaviour
     public Animator wandAnimator;
     public WandManager wandManager;
     public LayerMask hittableLayers = ~0;
-
     [Header("Aiming")]
     public Transform camTrans; // drag your player camera here
     public float maxAimDistance = 100f;
+    [Header("Wand Identity")]
+    public int wandID; // 0 = Arcane Whisper, 1 = Starfall Scepter, etc. Must match GameManager index.
 }
