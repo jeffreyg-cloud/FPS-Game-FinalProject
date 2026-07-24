@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class TunnelGemManager : MonoBehaviour
 {
@@ -11,16 +12,37 @@ public class TunnelGemManager : MonoBehaviour
     [Header("Teleport Back")]
     public Transform originalDoorDestination;
 
+    [Header("UI")]
+    public GameObject tunnelObjectiveCanvas;
+    public TMP_Text objectiveText;
+
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void Start()
+    {
+        UpdateUI();
+
+        // UI hidden when game starts
+        if (tunnelObjectiveCanvas != null)
+        {
+            tunnelObjectiveCanvas.SetActive(false);
+        }
     }
 
     public void CollectGem()
     {
         collectedGems++;
 
-        Debug.Log("Gems collected: " + collectedGems + "/" + requiredGems);
+        UpdateUI();
+
+        Debug.Log(
+            "Watches collected: " +
+            collectedGems + "/" +
+            requiredGems
+        );
 
         if (collectedGems >= requiredGems)
         {
@@ -28,9 +50,25 @@ public class TunnelGemManager : MonoBehaviour
         }
     }
 
+    private void UpdateUI()
+    {
+        if (objectiveText != null)
+        {
+            objectiveText.text =
+                "Please collect " +
+                requiredGems +
+                " watches and escape!\n\n" +
+                "Watches: " +
+                collectedGems +
+                "/" +
+                requiredGems;
+        }
+    }
+
     private void TeleportBackToDoor()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject player =
+            GameObject.FindGameObjectWithTag("Player");
 
         if (player == null)
         {
@@ -62,6 +100,15 @@ public class TunnelGemManager : MonoBehaviour
                 originalDoorDestination.rotation;
         }
 
-        Debug.Log("Collected 5 gems! Teleported back to the door!");
+        // Hide tunnel UI after escaping
+        if (tunnelObjectiveCanvas != null)
+        {
+            tunnelObjectiveCanvas.SetActive(false);
+        }
+
+        Debug.Log(
+            "Collected 5 watches! " +
+            "Teleported back to the door!"
+        );
     }
 }
