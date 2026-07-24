@@ -5,6 +5,7 @@ public class WandManager : MonoBehaviour
 {
     public WandStats[] wands;
     public int activeIndex = 0;
+
     public PlayerManaUI manaUI;
     public WeaponUI weaponUI;
 
@@ -16,13 +17,13 @@ public class WandManager : MonoBehaviour
     {
         unlocked = new bool[wands.Length];
 
-        // Hide all wands first
+        // Hide all wands
         for (int i = 0; i < wands.Length; i++)
         {
             wands[i].gameObject.SetActive(false);
         }
 
-        // Restore saved data from GameManager
+        // Restore data from GameManager
         if (GameManager.Instance != null)
         {
             for (int i = 0; i < wands.Length; i++)
@@ -32,26 +33,22 @@ public class WandManager : MonoBehaviour
 
             activeIndex = GameManager.Instance.activeWand;
 
-            // Enable every unlocked wand
-            for (int i = 0; i < wands.Length; i++)
+            // Show the equipped wand if unlocked
+            if (activeIndex >= 0 &&
+                activeIndex < wands.Length &&
+                unlocked[activeIndex])
             {
-                if (unlocked[i])
-                    wands[i].gameObject.SetActive(true);
-            }
-
-            // Only the active wand should stay visible
-            for (int i = 0; i < wands.Length; i++)
-            {
-                if (i != activeIndex)
-                    wands[i].gameObject.SetActive(false);
-            }
-
-            if (unlocked[activeIndex])
                 wands[activeIndex].gameObject.SetActive(true);
+            }
 
-            if (weaponUI != null && unlocked[activeIndex])
+            // Update Weapon UI
+            if (weaponUI != null)
             {
-                weaponUI.SelectWeapon(activeIndex + 1);
+                weaponUI.SetWeaponOwnership(
+                    unlocked.Length > 0 ? unlocked[0] : false,
+                    unlocked.Length > 1 ? unlocked[1] : false,
+                    activeIndex + 1
+                );
             }
         }
     }
@@ -62,35 +59,49 @@ public class WandManager : MonoBehaviour
 
         if (Keyboard.current.digit1Key.wasPressedThisFrame)
             SwitchWand(0);
+
         else if (Keyboard.current.digit2Key.wasPressedThisFrame)
             SwitchWand(1);
     }
 
     void SwitchWand(int index)
     {
-        if (index < 0 || index >= wands.Length || index == activeIndex) return;
-        if (!unlocked[index]) return;
+        if (index < 0 || index >= wands.Length)
+            return;
+
+        if (index == activeIndex)
+            return;
+
+        if (!unlocked[index])
+            return;
 
         wands[activeIndex].gameObject.SetActive(false);
 
         activeIndex = index;
+
         wands[activeIndex].gameObject.SetActive(true);
 
-        // Save current equipped wand
+        // Save equipped wand
         if (GameManager.Instance != null)
         {
             GameManager.Instance.activeWand = activeIndex;
         }
 
+        // Update UI
         if (weaponUI != null)
         {
-            weaponUI.SelectWeapon(index + 1);
+            weaponUI.SetWeaponOwnership(
+                unlocked.Length > 0 ? unlocked[0] : false,
+                unlocked.Length > 1 ? unlocked[1] : false,
+                activeIndex + 1
+            );
         }
     }
 
     public void UnlockWand(int index)
     {
-        if (index < 0 || index >= wands.Length) return;
+        if (index < 0 || index >= wands.Length)
+            return;
 
         unlocked[index] = true;
 
@@ -102,20 +113,30 @@ public class WandManager : MonoBehaviour
         }
 
         if (unlocked[activeIndex])
+        {
             wands[activeIndex].gameObject.SetActive(false);
+        }
 
         activeIndex = index;
+
         wands[activeIndex].gameObject.SetActive(true);
 
+        // Update UI
         if (weaponUI != null)
         {
-            weaponUI.SelectWeapon(index + 1);
+            weaponUI.SetWeaponOwnership(
+                unlocked.Length > 0 ? unlocked[0] : false,
+                unlocked.Length > 1 ? unlocked[1] : false,
+                activeIndex + 1
+            );
         }
     }
 
     public bool TrySpendMana(float amount)
     {
-        if (manaUI == null) return true;
+        if (manaUI == null)
+            return true;
+
         return manaUI.UseMana(amount);
     }
 }
