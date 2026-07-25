@@ -41,24 +41,24 @@ public class Fireball : MonoBehaviour
         {
             Debug.Log("Player detected!");
 
-            if (playerHealth != null)
+            Debug.Log("playerHealth = " + playerHealth);
+
+            if (playerHealth == null)
             {
-                Debug.Log("Calling TakeDamage()");
-                playerHealth.TakeDamage(damage);
+                Debug.LogError("playerHealth is NULL");
             }
             else
             {
-                Debug.LogError("PlayerHealthUI is NULL!");
+                Debug.Log("About to call TakeDamage");
+                playerHealth.TakeDamage(damage);
+                Debug.Log("TakeDamage finished");
             }
 
             Destroy(gameObject);
         }
-    
 
-        // Hit Ground
         if (other.CompareTag("ground"))
         {
-            Debug.Log("Hit Ground");
             Destroy(gameObject);
         }
     }
