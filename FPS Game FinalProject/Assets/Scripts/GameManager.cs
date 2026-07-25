@@ -19,6 +19,11 @@ public class GameManager : MonoBehaviour
     public int gemCount = 0;
     public int maxGemCount = 6;
 
+    [Header("Checkpoint")]
+    public Vector3 lastCheckpointPosition;
+    public Quaternion lastCheckpointRotation;
+    public bool hasCheckpoint = false;
+
     private void Awake()
     {
         if (Instance == null)
