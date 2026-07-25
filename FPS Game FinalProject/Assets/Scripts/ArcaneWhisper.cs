@@ -1,12 +1,17 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+
 // Attach alongside WandStats on the "Arcane Whisper" wand GameObject.
 [RequireComponent(typeof(WandStats))]
 public class ArcaneWhisperWeapon : MonoBehaviour
 {
     public GameObject bulletPrefab;    // visual-only prefab, no script/collider needed
     public GameObject impactEffectPrefab;
+    public AudioClip fireSound;        // shot sound effect
+    [Range(0f, 1f)] public float fireSoundVolume = 0.5f;
+    public AudioClip impactSound;      // hit sound effect
+    [Range(0f, 1f)] public float impactSoundVolume = 0.5f;
     public float fireRate = 0.4f;
     public float range = 35f;
     public float projectileSpeed = 30f;
@@ -42,23 +47,33 @@ public class ArcaneWhisperWeapon : MonoBehaviour
         if (bulletPrefab == null || stats.firePoint == null) return;
         nextFireTime = Time.time + fireRate;
 
-        // Aim firePoint to face exactly the same direction as the camera,
-        // so the bullet travels perfectly parallel to the crosshair
-        // regardless of where firePoint is physically positioned.
+        // Aim firePoint at whatever the crosshair is actually pointing at,
+        // recalculated fresh every shot so wand animation/bob doesn't throw it off
         if (stats.camTrans != null)
         {
-            stats.firePoint.rotation = Quaternion.LookRotation(stats.camTrans.forward);
+            RaycastHit hit;
+            if (Physics.Raycast(stats.camTrans.position, stats.camTrans.forward, out hit, range, stats.hittableLayers))
+            {
+                stats.firePoint.LookAt(hit.point); // aim at whatever the crosshair hit
+            }
+            else
+            {
+                stats.firePoint.LookAt(stats.camTrans.position + (stats.camTrans.forward * range)); // aim at center of screen, far away
+            }
         }
 
         if (stats.wandAnimator != null) stats.wandAnimator.SetTrigger("Fire");
         if (stats.effectPrefab != null)
             Instantiate(stats.effectPrefab, stats.firePoint.position, stats.firePoint.rotation);
 
+        if (fireSound != null)
+            AudioSource.PlayClipAtPoint(fireSound, stats.firePoint.position, fireSoundVolume);
+
         GameObject bulletGO = Instantiate(bulletPrefab, stats.firePoint.position, stats.firePoint.rotation);
         // Runs on WandManager (which never gets disabled), so the bullet
         // keeps flying even if the player switches wands mid-flight.
         MonoBehaviour coroutineHost = stats.wandManager != null ? (MonoBehaviour)stats.wandManager : this;
-        coroutineHost.StartCoroutine(MoveBullet(bulletGO, stats.firePoint.forward));
+        coroutineHost.StartCoroutine(MoveBullet(bulletGO, stats.firePoint.forward)); // matches the LookAt result
 
         // Play the tilt effect on this wand's own transform
         if (tiltCoroutine != null) StopCoroutine(tiltCoroutine);
@@ -110,6 +125,8 @@ public class ArcaneWhisperWeapon : MonoBehaviour
                     hit.collider.SendMessage("TakeDamage", stats.damage, SendMessageOptions.DontRequireReceiver);
                     if (impactEffectPrefab != null)
                         Instantiate(impactEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+                    if (impactSound != null)
+                        AudioSource.PlayClipAtPoint(impactSound, hit.point, impactSoundVolume);
                     Destroy(bulletGO);
                     yield break;
                 }

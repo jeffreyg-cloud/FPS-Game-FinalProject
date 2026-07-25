@@ -14630,7 +14630,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fireball
   speed: 12
-  damage: 10
+  damage: 5
   lifeTime: 5
 --- !u!135 &8198318521068828035
 SphereCollider:

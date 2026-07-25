@@ -8,6 +8,10 @@ public class StarfallScepterWeapon : MonoBehaviour
 {
     public GameObject bulletPrefab;    // visual-only prefab, no script/collider needed
     public GameObject explosionEffectPrefab;
+    public AudioClip fireSound;        // shot sound effect
+    [Range(0f, 1f)] public float fireSoundVolume = 0.5f;
+    public AudioClip impactSound;      // explosion sound effect
+    [Range(0f, 1f)] public float impactSoundVolume = 0.5f;
     public float cooldown = 1.5f;
     public float range = 25f;
     public float projectileSpeed = 15f;
@@ -47,23 +51,33 @@ public class StarfallScepterWeapon : MonoBehaviour
 
         nextCastTime = Time.time + cooldown;
 
-        // Aim firePoint to face exactly the same direction as the camera,
-        // so the orb travels perfectly parallel to the crosshair
-        // regardless of where firePoint is physically positioned.
+        // Aim firePoint at whatever the crosshair is actually pointing at,
+        // recalculated fresh every shot so wand animation/bob doesn't throw it off
         if (stats.camTrans != null)
         {
-            stats.firePoint.rotation = Quaternion.LookRotation(stats.camTrans.forward);
+            RaycastHit hit;
+            if (Physics.Raycast(stats.camTrans.position, stats.camTrans.forward, out hit, range, stats.hittableLayers))
+            {
+                stats.firePoint.LookAt(hit.point); // aim at whatever the crosshair hit
+            }
+            else
+            {
+                stats.firePoint.LookAt(stats.camTrans.position + (stats.camTrans.forward * range)); // aim at center of screen, far away
+            }
         }
 
         if (stats.wandAnimator != null) stats.wandAnimator.SetTrigger("Cast");
         if (stats.effectPrefab != null)
             Instantiate(stats.effectPrefab, stats.firePoint.position, stats.firePoint.rotation);
 
+        if (fireSound != null)
+            AudioSource.PlayClipAtPoint(fireSound, stats.firePoint.position, fireSoundVolume);
+
         GameObject bulletGO = Instantiate(bulletPrefab, stats.firePoint.position, stats.firePoint.rotation);
         // Runs on WandManager (which never gets disabled), so the orb
         // keeps flying even if the player switches wands mid-flight.
         MonoBehaviour coroutineHost = stats.wandManager != null ? (MonoBehaviour)stats.wandManager : this;
-        coroutineHost.StartCoroutine(MoveBullet(bulletGO, stats.firePoint.forward));
+        coroutineHost.StartCoroutine(MoveBullet(bulletGO, stats.firePoint.forward)); // matches the LookAt result
 
         // Play the tilt effect on this wand's own transform
         if (tiltCoroutine != null) StopCoroutine(tiltCoroutine);
@@ -136,6 +150,9 @@ public class StarfallScepterWeapon : MonoBehaviour
     {
         if (explosionEffectPrefab != null)
             Instantiate(explosionEffectPrefab, center, Quaternion.identity);
+
+        if (impactSound != null)
+            AudioSource.PlayClipAtPoint(impactSound, center, impactSoundVolume);
 
         foreach (Collider col in Physics.OverlapSphere(center, explosionRadius, stats.hittableLayers))
         {

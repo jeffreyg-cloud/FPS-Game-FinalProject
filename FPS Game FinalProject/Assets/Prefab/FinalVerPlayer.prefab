@@ -86,7 +86,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.31, z: -12.99}
-  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4211161908782946391}
@@ -352,9 +352,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3625818554023152029}
     - target: {fileID: 4694992666028915498, guid: 4f67a680cee331143a5556a3a15548d9, type: 3}
+      propertyPath: fireSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 1057c61246cdd0547ba366971d3c3c19, type: 3}
+    - target: {fileID: 4694992666028915498, guid: 4f67a680cee331143a5556a3a15548d9, type: 3}
       propertyPath: swingAngle
       value: -25
       objectReference: {fileID: 0}
+    - target: {fileID: 4694992666028915498, guid: 4f67a680cee331143a5556a3a15548d9, type: 3}
+      propertyPath: impactSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 62b815499d09c6941934223d6c9910a6, type: 3}
     - target: {fileID: 6663813321578077329, guid: 4f67a680cee331143a5556a3a15548d9, type: 3}
       propertyPath: m_Name
       value: Arcane Whisper
@@ -405,8 +413,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1654478896020147780}
     - target: {fileID: 5474344172773172742, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
+      propertyPath: fireSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 62b815499d09c6941934223d6c9910a6, type: 3}
+    - target: {fileID: 5474344172773172742, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
       propertyPath: swingAngle
       value: -25
+      objectReference: {fileID: 0}
+    - target: {fileID: 5474344172773172742, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
+      propertyPath: impactSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 62b815499d09c6941934223d6c9910a6, type: 3}
+    - target: {fileID: 5474344172773172742, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
+      propertyPath: knockbackForce
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 5957398517357214551, guid: 11cf68487e56f5942a23a205bcf9cc28, type: 3}
       propertyPath: m_LocalPosition.x

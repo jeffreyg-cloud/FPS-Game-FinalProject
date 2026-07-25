@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class KeyPickup : MonoBehaviour
 {
     [Header("Tutorial Reference")]
@@ -12,10 +13,20 @@ public class KeyPickup : MonoBehaviour
         "You collected the Gate Key!\n" +
         "You can now open the gate.";
 
-    private bool playerNearby;
+    [Header("Sound")]
+    [SerializeField] private AudioClip pickupSound;
+    [Range(0f, 3f)][SerializeField] private float pickupSoundVolume = 1f; // can boost above normal
 
-    // Store the player that entered the trigger
+    private bool playerNearby;
     private PlayerKey playerKey;
+    private AudioSource audioSource;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f; // 2D sound, plays at full volume regardless of distance
+    }
 
     private void Update()
     {
@@ -30,19 +41,30 @@ public class KeyPickup : MonoBehaviour
 
             tutorialUI.ShowMessage(collectMessage, 5f);
 
-            Destroy(gameObject);
+            // Hide the key immediately (visual + collider), but don't destroy
+            // the object yet so the pickup sound can finish playing
+            GetComponent<Collider>().enabled = false;
+            foreach (Renderer r in GetComponentsInChildren<Renderer>())
+                r.enabled = false;
+
+            if (pickupSound != null)
+            {
+                audioSource.PlayOneShot(pickupSound, pickupSoundVolume);
+                Destroy(gameObject, pickupSound.length);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         PlayerController player = other.GetComponent<PlayerController>();
-
         if (player != null)
         {
             playerNearby = true;
-
-            // Get the PlayerKey component from the player
             playerKey = player.GetComponent<PlayerKey>();
         }
     }

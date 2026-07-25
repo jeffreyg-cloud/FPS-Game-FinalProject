@@ -292,6 +292,12 @@ MonoBehaviour:
   hittableLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  camTrans: {fileID: 0}
+  maxAimDistance: 100
+  wandID: 0
+  enableIdleBob: 1
+  bobHeight: 0.02
+  bobSpeed: 1.5
 --- !u!114 &5474344172773172742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -312,6 +318,9 @@ MonoBehaviour:
   bulletHitRadius: 0.2
   explosionRadius: 4
   knockbackForce: 5
+  tiltAngle: -25
+  tiltOutTime: 0.05
+  tiltReturnTime: 0.15
 --- !u!1001 &5849853464023394658
 PrefabInstance:
   m_ObjectHideFlags: 0

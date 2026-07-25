@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(AudioSource))]
 public class DoorController : MonoBehaviour
 {
     [Header("Door References")]
@@ -11,10 +12,14 @@ public class DoorController : MonoBehaviour
     public float openAngle = 45f;
     public float openSpeed = 2f;
 
+    [Header("Sound")]
+    public AudioClip doorOpenSound;
+    [Range(0f, 1f)] public float doorSoundVolume = 1f;
+
     private bool playerNearby = false;
     private bool doorOpened = false;
-
     private PlayerKey playerKey;
+    private AudioSource audioSource;
 
     private Quaternion leftClosedRotation;
     private Quaternion rightClosedRotation;
@@ -25,9 +30,12 @@ public class DoorController : MonoBehaviour
     {
         leftClosedRotation = leftDoor.localRotation;
         rightClosedRotation = rightDoor.localRotation;
-
         leftOpenRotation = leftClosedRotation * Quaternion.Euler(0, -openAngle, 0);
         rightOpenRotation = rightClosedRotation * Quaternion.Euler(0, openAngle, 0);
+
+        audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.priority = 0; // 0 = highest priority, won't get cut by wand SFX spam (default is 128)
     }
 
     private void Update()
@@ -40,6 +48,10 @@ public class DoorController : MonoBehaviour
             if (playerKey != null && playerKey.hasKey)
             {
                 doorOpened = true;
+
+                if (doorOpenSound != null)
+                    audioSource.PlayOneShot(doorOpenSound, doorSoundVolume);
+
                 StartCoroutine(OpenDoor());
             }
             else
@@ -52,14 +64,11 @@ public class DoorController : MonoBehaviour
     IEnumerator OpenDoor()
     {
         float t = 0f;
-
         while (t < 1f)
         {
             t += Time.deltaTime * openSpeed;
-
             leftDoor.localRotation = Quaternion.Slerp(leftClosedRotation, leftOpenRotation, t);
             rightDoor.localRotation = Quaternion.Slerp(rightClosedRotation, rightOpenRotation, t);
-
             yield return null;
         }
     }
@@ -67,12 +76,10 @@ public class DoorController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         PlayerController player = other.GetComponent<PlayerController>();
-
         if (player != null)
         {
             playerNearby = true;
             playerKey = player.GetComponent<PlayerKey>();
-
             Debug.Log("Player entered gate trigger.");
         }
     }

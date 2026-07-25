@@ -225,7 +225,7 @@ MonoBehaviour:
   range: 35
   projectileSpeed: 15
   bulletHitRadius: 0.15
-  tiltAngle: 45
+  tiltAngle: -25
   tiltOutTime: 0.05
   tiltReturnTime: 0.15
 --- !u!1 &6886381613899725230
