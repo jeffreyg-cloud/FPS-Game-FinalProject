@@ -744,7 +744,7 @@ MonoBehaviour:
   selectedScale: 1.03
   normalScale: 1
   hasWeapon1: 0
-  hasWeapon2: 0
+  hasWeapon2: 1
 --- !u!1 &7144025465534379315
 GameObject:
   m_ObjectHideFlags: 0
@@ -837,7 +837,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2265966812783935827
 RectTransform:
   m_ObjectHideFlags: 0
@@ -926,7 +926,7 @@ RectTransform:
   m_GameObject: {fileID: 8292119536640675566}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.03, y: 1.03, z: 1.03}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5084053821804257601}
@@ -961,7 +961,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.28930807, g: 0.104623936, b: 0.2893081, a: 0.6666667}
+  m_Color: {r: 0.6431373, g: 0.2627451, b: 0.6431373, a: 0.8627451}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
