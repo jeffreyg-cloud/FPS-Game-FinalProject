@@ -25,7 +25,7 @@ public class TunnelGemManager : MonoBehaviour
     {
         UpdateUI();
 
-        // UI hidden when game starts
+        // Hide UI at the beginning
         if (tunnelObjectiveCanvas != null)
         {
             tunnelObjectiveCanvas.SetActive(false);
@@ -44,6 +44,7 @@ public class TunnelGemManager : MonoBehaviour
             requiredGems
         );
 
+        // If all watches are collected
         if (collectedGems >= requiredGems)
         {
             TeleportBackToDoor();
@@ -67,40 +68,50 @@ public class TunnelGemManager : MonoBehaviour
 
     private void TeleportBackToDoor()
     {
-        GameObject player =
-            GameObject.FindGameObjectWithTag("Player");
+        // Find Player
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
 
         if (player == null)
         {
-            Debug.LogWarning("Player not found!");
+            Debug.LogError("Player with tag 'Player' not found!");
             return;
         }
 
+        // Find CharacterController on Player or parent
         CharacterController controller =
-            player.GetComponent<CharacterController>();
+            player.GetComponentInParent<CharacterController>();
 
-        if (controller != null)
+        if (controller == null)
         {
-            controller.enabled = false;
-
-            player.transform.position =
-                originalDoorDestination.position;
-
-            player.transform.rotation =
-                originalDoorDestination.rotation;
-
-            controller.enabled = true;
-        }
-        else
-        {
-            player.transform.position =
-                originalDoorDestination.position;
-
-            player.transform.rotation =
-                originalDoorDestination.rotation;
+            Debug.LogError(
+                "CharacterController not found on Player or its parent!"
+            );
+            return;
         }
 
-        // Hide tunnel UI after escaping
+        // Check destination
+        if (originalDoorDestination == null)
+        {
+            Debug.LogError(
+                "Original Door Destination is not assigned!"
+            );
+            return;
+        }
+
+        // Disable CharacterController
+        controller.enabled = false;
+
+        // Teleport player
+        controller.transform.position =
+            originalDoorDestination.position;
+
+        // Keep player's current rotation
+        // Do NOT copy destination rotation
+
+        // Enable CharacterController
+        controller.enabled = true;
+
+        // Hide tunnel UI
         if (tunnelObjectiveCanvas != null)
         {
             tunnelObjectiveCanvas.SetActive(false);

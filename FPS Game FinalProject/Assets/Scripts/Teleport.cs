@@ -26,23 +26,26 @@ public class Teleport : MonoBehaviour
 
         hasTeleported = true;
 
-        // Turn off CharacterController
+        // Disable CharacterController
         controller.enabled = false;
 
-        // Teleport the PLAYER
+        // Teleport player
         controller.transform.position =
             teleportDestination.position;
 
-        controller.transform.rotation =
-            teleportDestination.rotation;
-
-        // Turn CharacterController back ON
+        // Enable CharacterController
         controller.enabled = true;
 
-        // Show UI
+        // Show tunnel UI
         if (tunnelObjectiveCanvas != null)
         {
             tunnelObjectiveCanvas.SetActive(true);
+        }
+
+        // Change music to tunnel music
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.PlayTunnelMusic();
         }
 
         Debug.Log("Player teleported into tunnel!");
