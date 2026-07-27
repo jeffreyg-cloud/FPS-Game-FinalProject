@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+
 public class TutorialWeaponPickup : MonoBehaviour
 {
     [Header("References")]
@@ -8,6 +9,7 @@ public class TutorialWeaponPickup : MonoBehaviour
     [SerializeField] private WandManager wandManager;
     [SerializeField] private int wandIndex = 0;       // index into WandManager.wands for THIS weapon
     [SerializeField] private int weaponUISlot = 1;    // which WeaponUI slot number this unlocks (1, 2, ...)
+
     [Header("Messages")]
     [TextArea(2, 4)]
     [SerializeField]
@@ -22,18 +24,26 @@ public class TutorialWeaponPickup : MonoBehaviour
     [SerializeField]
     private string attackMessage =
         "Left Click to cast your spell.";
+
     [Header("Timing")]
     [SerializeField] private float obtainedDisplayTime = 2.5f;
     [SerializeField] private float attackDisplayTime = 4f;
+
+    [Header("Sound")]
+    [SerializeField] private AudioClip pickupSound;
+    [SerializeField] private float pickupVolume = 1f;
+
     private bool playerNearby;
     private bool collected;
     private MeshRenderer staffRenderer;
     private Collider staffCollider;
+
     private void Awake()
     {
         staffRenderer = GetComponent<MeshRenderer>();
         staffCollider = GetComponent<Collider>();
     }
+
     private void Update()
     {
         if (!playerNearby || collected)
@@ -45,6 +55,7 @@ public class TutorialWeaponPickup : MonoBehaviour
             CollectWeapon();
         }
     }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.GetComponent<PlayerController>() == null)
@@ -57,6 +68,7 @@ public class TutorialWeaponPickup : MonoBehaviour
             0f
         );
     }
+
     private void OnTriggerExit(Collider other)
     {
         if (other.GetComponent<PlayerController>() == null)
@@ -69,10 +81,14 @@ public class TutorialWeaponPickup : MonoBehaviour
             tutorialUI.HideMessage();
         }
     }
+
     private void CollectWeapon()
     {
         collected = true;
         playerNearby = false;
+
+        PlayPickupSound();
+
         // Hide everything visual under this wand: the staff mesh itself,
         // plus all child effects (particles, lights) like Flower Rain,
         // Toon Water Shield, Spot Lights, etc.
@@ -88,21 +104,42 @@ public class TutorialWeaponPickup : MonoBehaviour
         {
             lightSource.enabled = false;
         }
+
         // Turn off pickup range so it can't be triggered again
         if (staffCollider != null)
         {
             staffCollider.enabled = false;
         }
+
         // Unlock this weapon's UI slot
         weaponUI.UnlockWeapon(weaponUISlot);
+
         // Actually reveal + equip the wand in the player's hand
         if (wandManager != null)
         {
             wandManager.UnlockWand(wandIndex);
         }
+
         // Continue playing the pickup + attack tutorial sequence
         StartCoroutine(WeaponTutorialSequence());
     }
+
+    private void PlayPickupSound()
+    {
+        if (pickupSound == null) return;
+
+        GameObject soundGO = new GameObject("PickupSound");
+        soundGO.transform.position = transform.position;
+
+        AudioSource src = soundGO.AddComponent<AudioSource>();
+        src.clip = pickupSound;
+        src.volume = pickupVolume;
+        src.spatialBlend = 0f; // 2D sound, full volume regardless of distance
+        src.Play();
+
+        Destroy(soundGO, pickupSound.length);
+    }
+
     private IEnumerator WeaponTutorialSequence()
     {
         tutorialUI.ShowMessage(
