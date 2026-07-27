@@ -409,9 +409,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9205904118121259473}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 29, y: 7.08, z: 18}
-  m_LocalScale: {x: 3.0580466, y: 2.6113257, z: 2.6113257}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1980550850773194280}
@@ -419,7 +419,7 @@ Transform:
   - {fileID: 6511382634784738189}
   - {fileID: 445886353329115821}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!33 &6103266117563595164
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -496,8 +496,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 8.927656, y: 9.23209, z: 1.7612123}
-  m_Center: {x: -0.3088661, y: -0.16193484, z: -0.5841664}
+  m_Size: {x: 8.5711, y: 6.5628686, z: 1.7612123}
+  m_Center: {x: -0.13059378, y: 0.04628384, z: -0.5841664}
 --- !u!114 &7553855814778558032
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -518,6 +518,8 @@ MonoBehaviour:
   nearbyMessage: Press E to collect.
   fullMessage: Gem pouch full!
   fullMessageDisplayTime: 2
+  collectSound: {fileID: 8300000, guid: 3e0f4602c3e36284284baec7e7e63682, type: 3}
+  collectVolume: 0.3
 --- !u!1001 &8980883113750863276
 PrefabInstance:
   m_ObjectHideFlags: 0

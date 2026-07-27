@@ -155,15 +155,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8918834526387925910}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 31.49, y: 6.5, z: 42.37}
-  m_LocalScale: {x: 3.0580466, y: 2.6113257, z: 2.6113257}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2892647707283043257}
   - {fileID: 4088763831669522219}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!33 &407183772484440986
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -262,6 +262,8 @@ MonoBehaviour:
   nearbyMessage: Press E to collect.
   fullMessage: Mushroom pouch full!
   fullMessageDisplayTime: 2
+  collectSound: {fileID: 8300000, guid: 3e0f4602c3e36284284baec7e7e63682, type: 3}
+  collectVolume: 0.3
 --- !u!1001 &5158099627550889839
 PrefabInstance:
   m_ObjectHideFlags: 0

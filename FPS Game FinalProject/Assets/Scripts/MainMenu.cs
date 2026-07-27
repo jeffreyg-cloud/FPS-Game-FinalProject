@@ -3,9 +3,17 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
+    public string storySceneName = "Story";
+    public string levelSceneName = "Emily";
+
     public void StartGame()
     {
-        SceneManager.LoadScene("Emily");
+        SceneManager.LoadScene(storySceneName);
+    }
+
+    public void OnNextPressed()
+    {
+        SceneManager.LoadScene(levelSceneName);
     }
 
     public void ExitGame()

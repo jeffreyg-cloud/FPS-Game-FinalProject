@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+
 public class CollectibleItem : MonoBehaviour
 {
     public enum ItemType { Mushroom, Gem }
@@ -21,6 +22,10 @@ public class CollectibleItem : MonoBehaviour
     [SerializeField] private string fullMessage = "Mushroom pouch full!";
     [SerializeField] private float fullMessageDisplayTime = 2f;
 
+    [Header("Sound")]
+    [SerializeField] private AudioClip collectSound;
+    [SerializeField] private float collectVolume = 1f;
+
     private bool playerNearby;
     private bool collected;
     private Collider itemCollider;
@@ -34,7 +39,6 @@ public class CollectibleItem : MonoBehaviour
     private void Update()
     {
         if (!playerNearby || collected) return;
-
         if (Input.GetKeyDown(KeyCode.E))
         {
             TryCollect();
@@ -44,7 +48,6 @@ public class CollectibleItem : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.GetComponent<PlayerController>() == null) return;
-
         playerNearby = true;
         ShowMessage(nearbyMessage, 0f);
     }
@@ -52,7 +55,6 @@ public class CollectibleItem : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         if (other.GetComponent<PlayerController>() == null) return;
-
         playerNearby = false;
         if (!collected)
         {
@@ -84,7 +86,10 @@ public class CollectibleItem : MonoBehaviour
         playerNearby = false;
         HideMessage();
 
+        PlayCollectSound();
+
         if (itemCollider != null) itemCollider.enabled = false;
+
         foreach (Renderer r in GetComponentsInChildren<Renderer>())
         {
             r.enabled = false;
@@ -93,10 +98,25 @@ public class CollectibleItem : MonoBehaviour
         Destroy(gameObject, fadeDuration + 0.05f);
     }
 
+    private void PlayCollectSound()
+    {
+        if (collectSound == null) return;
+
+        GameObject soundGO = new GameObject("CollectSound");
+        soundGO.transform.position = transform.position;
+
+        AudioSource src = soundGO.AddComponent<AudioSource>();
+        src.clip = collectSound;
+        src.volume = collectVolume;
+        src.spatialBlend = 0f; // 2D sound, full volume regardless of distance
+        src.Play();
+
+        Destroy(soundGO, collectSound.length);
+    }
+
     private void ShowMessage(string message, float displayTime)
     {
         if (messageCanvasGroup == null || messageText == null) return;
-
         if (messageRoutine != null) StopCoroutine(messageRoutine);
         messageRoutine = StartCoroutine(ShowMessageRoutine(message, displayTime));
     }
@@ -104,7 +124,6 @@ public class CollectibleItem : MonoBehaviour
     private void HideMessage()
     {
         if (messageCanvasGroup == null) return;
-
         if (messageRoutine != null) StopCoroutine(messageRoutine);
         messageRoutine = StartCoroutine(FadeTo(0f));
     }
