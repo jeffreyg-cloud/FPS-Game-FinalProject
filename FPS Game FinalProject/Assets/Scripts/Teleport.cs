@@ -1,9 +1,8 @@
 using UnityEngine;
 
-public class Teleport : MonoBehaviour
+public class ClockTeleport : MonoBehaviour
 {
     public Transform teleportDestination;
-    public GameObject tunnelObjectiveCanvas;
 
     private bool hasTeleported = false;
 
@@ -24,30 +23,38 @@ public class Teleport : MonoBehaviour
             return;
         }
 
+        if (teleportDestination == null)
+        {
+            Debug.LogError("Teleport Destination is not assigned!");
+            return;
+        }
+
         hasTeleported = true;
 
-        // Disable CharacterController
+        // Disable Character Controller
         controller.enabled = false;
 
-        // Teleport player
+        // Teleport Player
         controller.transform.position =
             teleportDestination.position;
 
-        // Enable CharacterController
+        controller.transform.rotation =
+            teleportDestination.rotation;
+
+        // Enable Character Controller
         controller.enabled = true;
 
-        // Show tunnel UI
-        if (tunnelObjectiveCanvas != null)
-        {
-            tunnelObjectiveCanvas.SetActive(true);
-        }
-
-        // Change music to tunnel music
+        // Change to Clock Music
         if (MusicManager.Instance != null)
         {
-            MusicManager.Instance.PlayTunnelMusic();
+            MusicManager.Instance.PlayClockMusic();
+            Debug.Log("Clock Music Started!");
+        }
+        else
+        {
+            Debug.LogWarning("MusicManager Instance not found!");
         }
 
-        Debug.Log("Player teleported into tunnel!");
+        Debug.Log("Player teleported into clock!");
     }
 }

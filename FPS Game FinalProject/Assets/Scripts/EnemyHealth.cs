@@ -8,6 +8,9 @@ public class EnemyHealth : MonoBehaviour
     [Header("UI Reference")]
     [SerializeField] private EnemyHealthUI healthUI;
 
+    [Header("Final Enemy Settings")]
+    [SerializeField] private bool isFinalEnemy = false;
+
     private float currentHealth;
     private bool isDead;
 
@@ -24,13 +27,16 @@ public class EnemyHealth : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        // Don't take damage if enemy is already dead
         if (isDead || damage <= 0f)
         {
             return;
         }
 
+        // Reduce health
         currentHealth -= damage;
 
+        // Keep health between 0 and maxHealth
         currentHealth = Mathf.Clamp(
             currentHealth,
             0f,
@@ -45,8 +51,10 @@ public class EnemyHealth : MonoBehaviour
             + currentHealth
         );
 
+        // Update health UI
         UpdateHealthUI();
 
+        // Check if enemy died
         if (currentHealth <= 0f)
         {
             Die();
@@ -73,10 +81,34 @@ public class EnemyHealth : MonoBehaviour
 
         isDead = true;
 
-        Debug.Log(gameObject.name + " died!");
+        Debug.Log(
+            gameObject.name
+            + " died!"
+        );
 
-        // ???????
-        // ?????????????
+        // =========================================
+        // ONLY FINAL ENEMY TRIGGERS SCENE CHANGE
+        // =========================================
+
+        if (isFinalEnemy)
+        {
+            Debug.Log(
+                "FINAL ENEMY DEFEATED!"
+            );
+
+            if (SceneTransitionManager.Instance != null)
+            {
+                SceneTransitionManager.Instance.EnemyDefeated();
+            }
+            else
+            {
+                Debug.LogError(
+                    "SceneTransitionManager Instance not found!"
+                );
+            }
+        }
+
+        // Destroy enemy immediately
         Destroy(gameObject);
     }
 }
