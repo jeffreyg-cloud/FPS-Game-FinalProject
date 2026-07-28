@@ -960,6 +960,8 @@ MonoBehaviour:
   animator: {fileID: 7168224698365684254}
   firePrefab: {fileID: 5119269776080548121, guid: eb182a6d4d279ee4eb3d513efe9cbecd, type: 3}
   firePoint: {fileID: 8806335422892480982}
+  audioSource: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 136348b4f687d2144832edacb3f22348, type: 3}
   attackDamage: 10
 --- !u!114 &5526295569249060004
 MonoBehaviour:
@@ -975,6 +977,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHealth: 800
   healthUI: {fileID: 3639526249404142736}
+  isFinalEnemy: 0
 --- !u!136 &377676242594928773
 CapsuleCollider:
   m_ObjectHideFlags: 0

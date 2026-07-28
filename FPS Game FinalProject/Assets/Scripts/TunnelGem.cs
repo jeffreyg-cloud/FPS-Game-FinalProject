@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class TunnelGem : MonoBehaviour
@@ -13,14 +14,19 @@ public class TunnelGem : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        // Prevent collecting twice
         if (collected)
             return;
 
+        // Check Player
         if (other.CompareTag("Player"))
         {
             collected = true;
 
-            // Play collection sound
+            // ==========================================
+            // PLAY COLLECTION SOUND
+            // ==========================================
+
             if (collectSound != null && soundManager != null)
             {
                 soundManager.PlayOneShot(
@@ -29,10 +35,25 @@ public class TunnelGem : MonoBehaviour
                 );
             }
 
-            // Update collection count
-            TunnelGemManager.Instance.CollectGem();
+            // ==========================================
+            // UPDATE GEM / WATCH COUNT
+            // ==========================================
 
-            // Destroy watch
+            if (TunnelGemManager.Instance != null)
+            {
+                TunnelGemManager.Instance.CollectGem();
+            }
+            else
+            {
+                Debug.LogError(
+                    "TunnelGemManager.Instance is NULL!"
+                );
+            }
+
+            // ==========================================
+            // DESTROY WATCH
+            // ==========================================
+
             Destroy(gameObject);
         }
     }

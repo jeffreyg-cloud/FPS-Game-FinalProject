@@ -37,10 +37,43 @@ public class PlayerController : MonoBehaviour
     {
         if (camTrans != null)
             camStartLocalPos = camTrans.localPosition;
+
+        // Hide and lock mouse cursor when game starts
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
     {
+        // =========================
+        // CURSOR CONTROL
+        // =========================
+
+        // Press Escape to unlock and show mouse
+        if (Keyboard.current != null &&
+            Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        // Click to lock and hide mouse again
+        if (Mouse.current != null &&
+            Mouse.current.leftButton.wasPressedThisFrame &&
+            Cursor.lockState != CursorLockMode.Locked)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
+            // Don't shoot when clicking to re-enter the game
+            return;
+        }
+
+
+        // =========================
+        // MOVEMENT
+        // =========================
+
         float horizontal = 0f;
         float vertical = 0f;
 
@@ -62,14 +95,17 @@ public class PlayerController : MonoBehaviour
 
         float yStore = moveInput.y;
 
-        // Move based on the player's facing direction
+        // Move based on player's facing direction
         Vector3 vertMove = transform.forward * vertical;
         Vector3 horiMove = transform.right * horizontal;
 
         moveInput = vertMove + horiMove;
         moveInput.Normalize();
 
-        // Running
+        // =========================
+        // RUNNING
+        // =========================
+
         if (Keyboard.current != null &&
             Keyboard.current.leftShiftKey.isPressed)
         {
@@ -82,10 +118,17 @@ public class PlayerController : MonoBehaviour
 
         moveInput.y = yStore;
 
-        // Gravity
+        // =========================
+        // GRAVITY
+        // =========================
+
         moveInput.y += Physics.gravity.y
                        * gravityModifier
                        * Time.deltaTime;
+
+        // =========================
+        // JUMPING
+        // =========================
 
         if (charCon.isGrounded)
         {
@@ -99,7 +142,10 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // Double jump
+        // =========================
+        // DOUBLE JUMP
+        // =========================
+
         if (jumpAgain > 0 &&
             Keyboard.current != null &&
             Keyboard.current.spaceKey.wasPressedThisFrame)
@@ -108,7 +154,13 @@ public class PlayerController : MonoBehaviour
             jumpAgain--;
         }
 
+        // Move player
         charCon.Move(moveInput * Time.deltaTime);
+
+
+        // =========================
+        // ANIMATION
+        // =========================
 
         float horizontalSpeed = new Vector3(
             charCon.velocity.x,
@@ -121,25 +173,39 @@ public class PlayerController : MonoBehaviour
             anim.SetFloat("moveSpeed", horizontalSpeed);
         }
 
+
+        // =========================
+        // HEAD BOB
+        // =========================
+
         HeadBob(horizontalSpeed);
 
-        // Mouse camera movement
+
+        // =========================
+        // MOUSE CAMERA MOVEMENT
+        // =========================
+
         Vector2 mouseInput = Vector2.zero;
 
-        if (Mouse.current != null)
+        // Only control camera when cursor is locked
+        if (Mouse.current != null &&
+            Cursor.lockState == CursorLockMode.Locked)
         {
             mouseInput = Mouse.current.delta.ReadValue()
                          * mouseSensitivity
                          * 0.01f;
         }
 
+        // Rotate player left and right
         transform.rotation = Quaternion.Euler(
             transform.rotation.eulerAngles.x,
             transform.rotation.eulerAngles.y + mouseInput.x,
             transform.rotation.eulerAngles.z
         );
 
-        if (camTrans != null)
+        // Rotate camera up and down
+        if (camTrans != null &&
+            Cursor.lockState == CursorLockMode.Locked)
         {
             camTrans.rotation = Quaternion.Euler(
                 camTrans.rotation.eulerAngles
@@ -147,9 +213,15 @@ public class PlayerController : MonoBehaviour
             );
         }
 
-        // Shooting
+
+        // =========================
+        // SHOOTING
+        // =========================
+
+        // Only shoot when cursor is locked
         if (Mouse.current != null &&
-            Mouse.current.leftButton.wasPressedThisFrame)
+            Mouse.current.leftButton.wasPressedThisFrame &&
+            Cursor.lockState == CursorLockMode.Locked)
         {
             Debug.Log("Left Click!");
 
@@ -163,44 +235,67 @@ public class PlayerController : MonoBehaviour
 
             if (wand == null)
             {
-                Debug.LogError("Active wand is NULL — check WandManager's Wands array!");
+                Debug.LogError(
+                    "Active wand is NULL — check WandManager's Wands array!"
+                );
                 return;
             }
 
             if (wand.effectPrefab == null)
             {
-                Debug.LogError("Active wand's Effect Prefab is NOT assigned!");
+                Debug.LogError(
+                    "Active wand's Effect Prefab is NOT assigned!"
+                );
                 return;
             }
 
             if (wand.firePoint == null)
             {
-                Debug.LogError("Active wand's Fire Point is NOT assigned!");
+                Debug.LogError(
+                    "Active wand's Fire Point is NOT assigned!"
+                );
                 return;
             }
 
             if (camTrans == null)
             {
-                Debug.LogError("Camera Transform is NOT assigned!");
+                Debug.LogError(
+                    "Camera Transform is NOT assigned!"
+                );
                 return;
             }
 
+            // Check mana
             if (!wandManager.TrySpendMana(wand.manaCost))
             {
                 Debug.Log("Not enough mana!");
                 return;
             }
 
+            // =========================
+            // AIM WAND AT TARGET
+            // =========================
+
             RaycastHit hit;
 
-            if (Physics.Raycast(camTrans.position, camTrans.forward, out hit))
+            if (Physics.Raycast(
+                camTrans.position,
+                camTrans.forward,
+                out hit))
             {
                 wand.firePoint.LookAt(hit.point);
             }
             else
             {
-                wand.firePoint.LookAt(camTrans.position + camTrans.forward * 30f);
+                wand.firePoint.LookAt(
+                    camTrans.position +
+                    camTrans.forward * 30f
+                );
             }
+
+            // =========================
+            // SPAWN SPELL / BULLET
+            // =========================
 
             GameObject newBullet = Instantiate(
                 wand.effectPrefab,
@@ -208,40 +303,66 @@ public class PlayerController : MonoBehaviour
                 wand.firePoint.rotation
             );
 
+            // Play wand attack animation
             if (wand.wandAnimator != null)
             {
                 wand.wandAnimator.SetTrigger("Attack");
             }
 
-            Debug.Log("Bullet spawned at: " + newBullet.transform.position);
-        }
-
-    }
-
-    void HeadBob(float horizontalSpeed)
-    {
-        if (camTrans == null) return;
-
-        bool isMoving = horizontalSpeed > 0.1f && charCon.isGrounded;
-
-        if (isMoving)
-        {
-            bobTimer += Time.deltaTime * bobFrequency;
-
-            float bobY = Mathf.Sin(bobTimer) * bobAmplitude;
-            float bobX = Mathf.Cos(bobTimer / 2f) * bobSideAmplitude;
-
-            camTrans.localPosition = camStartLocalPos + new Vector3(bobX, bobY, 0f);
-        }
-        else
-        {
-            bobTimer = 0f;
-            camTrans.localPosition = Vector3.Lerp(
-                camTrans.localPosition,
-                camStartLocalPos,
-                Time.deltaTime * bobSmooth
+            Debug.Log(
+                "Bullet spawned at: " +
+                newBullet.transform.position
             );
         }
     }
 
+
+    // =========================
+    // HEAD BOB FUNCTION
+    // =========================
+
+    void HeadBob(float horizontalSpeed)
+    {
+        if (camTrans == null)
+            return;
+
+        bool isMoving =
+            horizontalSpeed > 0.1f &&
+            charCon.isGrounded;
+
+        if (isMoving)
+        {
+            bobTimer +=
+                Time.deltaTime *
+                bobFrequency;
+
+            float bobY =
+                Mathf.Sin(bobTimer) *
+                bobAmplitude;
+
+            float bobX =
+                Mathf.Cos(bobTimer / 2f) *
+                bobSideAmplitude;
+
+            camTrans.localPosition =
+                camStartLocalPos +
+                new Vector3(
+                    bobX,
+                    bobY,
+                    0f
+                );
+        }
+        else
+        {
+            bobTimer = 0f;
+
+            camTrans.localPosition =
+                Vector3.Lerp(
+                    camTrans.localPosition,
+                    camStartLocalPos,
+                    Time.deltaTime *
+                    bobSmooth
+                );
+        }
+    }
 }
