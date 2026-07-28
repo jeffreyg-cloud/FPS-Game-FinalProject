@@ -813,6 +813,7 @@ GameObject:
   - component: {fileID: 8297525657178407320}
   - component: {fileID: 1140926027557846640}
   - component: {fileID: 2137394385882225970}
+  - component: {fileID: 37751938433239526}
   m_Layer: 0
   m_Name: gxtrycanflyDragonSD_02
   m_TagString: Untagged
@@ -880,6 +881,8 @@ MonoBehaviour:
   firePrefab: {fileID: 4239385059243534984, guid: a12129c575718f8478a0134c3dca91a3, type: 3}
   firePoint: {fileID: 4451459754092030256}
   fireInterval: 0.3
+  audioSource: {fileID: 37751938433239526}
+  attackSound: {fileID: 8300000, guid: 4882cce2ba8f8f34481563fbddc8d679, type: 3}
 --- !u!114 &6274886382013852030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -892,7 +895,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34cefcefae9ca44409c662ed0d215e77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DragonAI
-  player: {fileID: 0}
+  player: {fileID: 8068049582236966807, guid: fa211dbd498c55d4c9826db1e12456d4, type: 3}
   dragonShoot: {fileID: 6422380366465718435}
   animator: {fileID: 5571839266450349370}
   flySpeed: 4
@@ -913,6 +916,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHealth: 100
   healthUI: {fileID: 122280166316943455}
+  isFinalEnemy: 0
 --- !u!135 &1140926027557846640
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -957,6 +961,103 @@ CapsuleCollider:
   m_Height: 3.3473415
   m_Direction: 1
   m_Center: {x: 0.028110504, y: 0.79522157, z: 0.00000023799953}
+--- !u!82 &37751938433239526
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3763667160957504144}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 4882cce2ba8f8f34481563fbddc8d679, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &4504534879498132540
 GameObject:
   m_ObjectHideFlags: 0

@@ -18,6 +18,10 @@ public class GoblinAttack02 : MonoBehaviour
     public GameObject firePrefab;
     public Transform firePoint;
 
+    [Header("Audio")]
+    public AudioSource audioSource;
+    public AudioClip attackSound;
+
     private Transform player;
     private NavMeshAgent agent;
 
@@ -108,6 +112,12 @@ public class GoblinAttack02 : MonoBehaviour
         nextAttackTime = Time.time + attackCooldown;
 
         animator.SetTrigger("Attack");
+
+        if (audioSource != null && attackSound != null)
+        {
+            audioSource.PlayOneShot(attackSound);
+        }
+
 
         yield return new WaitForSeconds(fireDelay);
 

@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.Audio;
 
 public class DragonShoot : MonoBehaviour
 {
@@ -9,6 +10,10 @@ public class DragonShoot : MonoBehaviour
 
     [Tooltip("Time between each fire breath")]
     public float fireInterval = 2f;
+
+    [Header("Audio")]
+    public AudioSource audioSource;
+    public AudioClip attackSound;
 
     private Coroutine fireRoutine;
     private bool isBreathing = false;
@@ -47,6 +52,11 @@ public class DragonShoot : MonoBehaviour
 
     private void ShootFire()
     {
+        if (audioSource != null && attackSound != null)
+        {
+            Debug.Log("Playing Dragon Sound");
+            audioSource.PlayOneShot(attackSound);
+        }
         if (firePrefab == null || firePoint == null)
             return;
 
