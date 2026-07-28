@@ -19,6 +19,31 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
     [Header("References")]
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerHealthUI playerHealthUI;
+    [SerializeField] private EnemyHealth enemyHealth;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip attackClip;
+    [SerializeField] private AudioClip deathClip;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float attackVolume = 1f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float deathVolume = 1f;
+
+    [Header("Audio Distance Settings")]
+
+    // 0 = 2D sound, 1 = fully 3D sound.
+    // A lower value makes the sound clearer and less affected by distance.
+    [Range(0f, 1f)]
+    [SerializeField] private float spatialBlend = 0.4f;
+
+    // The sound remains at full volume within this distance.
+    [SerializeField] private float minSoundDistance = 8f;
+
+    // Maximum distance from which the sound can still be heard.
+    [SerializeField] private float maxSoundDistance = 45f;
 
     private Transform player;
     private NavMeshAgent agent;
@@ -26,6 +51,7 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
     private float nextAttackTime;
     private bool hasDetectedPlayer;
     private bool isAttacking;
+    private bool deathSoundPlayed;
 
     private void Awake()
     {
@@ -35,6 +61,18 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
         {
             animator = GetComponentInChildren<Animator>();
         }
+
+        if (enemyHealth == null)
+        {
+            enemyHealth = GetComponent<EnemyHealth>();
+        }
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+
+        ConfigureAudioSource();
     }
 
     private void Start()
@@ -72,6 +110,12 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
 
     private void Update()
     {
+        if (enemyHealth != null && enemyHealth.IsDead)
+        {
+            PlayDeathSound();
+            return;
+        }
+
         if (player == null ||
             !agent.enabled ||
             !agent.isOnNavMesh)
@@ -146,10 +190,15 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
             animator.SetTrigger("Attack");
         }
 
+        PlayAttackSound();
+
         // Wait until the attack animation reaches the hit moment.
         yield return new WaitForSeconds(damageDelay);
 
-        TryDamagePlayer();
+        if (enemyHealth == null || !enemyHealth.IsDead)
+        {
+            TryDamagePlayer();
+        }
 
         // Prevent following until the attack cooldown has mostly completed.
         float remainingCooldown =
@@ -194,6 +243,96 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
                 " damage to Player."
             );
         }
+    }
+
+    private void ConfigureAudioSource()
+    {
+        if (audioSource == null)
+        {
+            return;
+        }
+
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.volume = 1f;
+
+        audioSource.spatialBlend = spatialBlend;
+        audioSource.minDistance = minSoundDistance;
+        audioSource.maxDistance = maxSoundDistance;
+
+        audioSource.rolloffMode =
+            AudioRolloffMode.Logarithmic;
+    }
+
+    private void PlayAttackSound()
+    {
+        if (audioSource != null && attackClip != null)
+        {
+            audioSource.PlayOneShot(
+                attackClip,
+                attackVolume
+            );
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (enemyHealth != null && enemyHealth.IsDead)
+        {
+            PlayDeathSound();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (enemyHealth != null && enemyHealth.IsDead)
+        {
+            PlayDeathSound();
+        }
+    }
+
+    private void PlayDeathSound()
+    {
+        if (deathSoundPlayed)
+        {
+            return;
+        }
+
+        deathSoundPlayed = true;
+
+        if (deathClip == null)
+        {
+            return;
+        }
+
+        GameObject temporaryAudioObject =
+            new GameObject(gameObject.name + " Death Sound");
+
+        temporaryAudioObject.transform.position =
+            transform.position;
+
+        AudioSource temporaryAudioSource =
+            temporaryAudioObject.AddComponent<AudioSource>();
+
+        temporaryAudioSource.clip = deathClip;
+        temporaryAudioSource.volume = deathVolume;
+
+        temporaryAudioSource.playOnAwake = false;
+        temporaryAudioSource.loop = false;
+
+        temporaryAudioSource.spatialBlend = spatialBlend;
+        temporaryAudioSource.minDistance = minSoundDistance;
+        temporaryAudioSource.maxDistance = maxSoundDistance;
+
+        temporaryAudioSource.rolloffMode =
+            AudioRolloffMode.Logarithmic;
+
+        temporaryAudioSource.Play();
+
+        Destroy(
+            temporaryAudioObject,
+            deathClip.length + 0.2f
+        );
     }
 
     private void StopMoving()
@@ -252,12 +391,14 @@ public class MeleeEnemyAttackPlayer : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
+
         Gizmos.DrawWireSphere(
             transform.position,
             detectionRange
         );
 
         Gizmos.color = Color.red;
+
         Gizmos.DrawWireSphere(
             transform.position,
             attackRange

@@ -12,15 +12,14 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
     [Header("Attack Settings")]
     [SerializeField] private float attackCooldown = 2f;
 
-    // Attack ???????????? Bullet?
-    // ?????????????
+    // Attack animation starts first, then the projectile fires after this delay.
     [SerializeField] private float fireDelay = 0.3f;
 
     [Header("Projectile Settings")]
     [SerializeField] private GameObject projectilePrefab;
     [SerializeField] private Transform firePoint;
 
-    // ? Bullet ?? Player ???????????
+    // Makes the projectile aim slightly above the Player's feet.
     [SerializeField] private float targetHeightOffset = 1f;
 
     [Header("Rotation")]
@@ -28,6 +27,31 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Animator animator;
+    [SerializeField] private EnemyHealth enemyHealth;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip attackClip;
+    [SerializeField] private AudioClip deathClip;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float attackVolume = 1f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float deathVolume = 1f;
+
+    [Header("Audio Distance Settings")]
+
+    // 0 = 2D sound, 1 = fully 3D sound.
+    // A lower value makes the sound clearer and less affected by distance.
+    [Range(0f, 1f)]
+    [SerializeField] private float spatialBlend = 0.4f;
+
+    // The sound remains at full volume within this distance.
+    [SerializeField] private float minSoundDistance = 8f;
+
+    // Maximum distance from which the sound can still be heard.
+    [SerializeField] private float maxSoundDistance = 45f;
 
     private Transform player;
     private NavMeshAgent agent;
@@ -35,6 +59,7 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
     private bool hasDetectedPlayer;
     private bool isAttacking;
     private float nextAttackTime;
+    private bool deathSoundPlayed;
 
     private static readonly int SpeedHash =
         Animator.StringToHash("Speed");
@@ -50,6 +75,18 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
         {
             animator = GetComponentInChildren<Animator>();
         }
+
+        if (enemyHealth == null)
+        {
+            enemyHealth = GetComponent<EnemyHealth>();
+        }
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+
+        ConfigureAudioSource();
     }
 
     private void Start()
@@ -64,16 +101,22 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
         else
         {
             Debug.LogError(
-                "Ranged Enemy ??? Player???? Player Tag?"
+                "Ranged Enemy cannot find Player. Check the Player Tag."
             );
         }
 
-        // Enemy ????????????
+        // Enemy stops slightly inside its attack range.
         agent.stoppingDistance = attackRange * 0.9f;
     }
 
     private void Update()
     {
+        if (enemyHealth != null && enemyHealth.IsDead)
+        {
+            PlayDeathSound();
+            return;
+        }
+
         if (player == null)
         {
             return;
@@ -89,7 +132,7 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
             player.position
         );
 
-        // ???????????Enemy ????? Player?
+        // Once detected, the Enemy continues following the Player.
         if (!hasDetectedPlayer &&
             distanceToPlayer <= detectionRange)
         {
@@ -117,7 +160,7 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
 
     private void FollowPlayer()
     {
-        // Attack Coroutine ???????????
+        // Do not move while the attack Coroutine is running.
         if (isAttacking)
         {
             return;
@@ -158,16 +201,16 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
             animator.SetTrigger(AttackHash);
         }
 
-        // ??????????????
+        // Wait until the animation reaches the firing moment.
         yield return new WaitForSeconds(fireDelay);
 
-        // ??????? Player ???????
-        if (player != null)
+        if (player != null &&
+            (enemyHealth == null || !enemyHealth.IsDead))
         {
             FireProjectile();
         }
 
-        // ???????????
+        // Wait for the remaining cooldown.
         float remainingTime =
             Mathf.Max(0f, attackCooldown - fireDelay);
 
@@ -181,16 +224,18 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
         if (projectilePrefab == null)
         {
             Debug.LogError(
-                "Projectile Prefab ?????"
+                "Projectile Prefab is not assigned."
             );
+
             return;
         }
 
         if (firePoint == null)
         {
             Debug.LogError(
-                "FirePoint ?????"
+                "FirePoint is not assigned."
             );
+
             return;
         }
 
@@ -221,9 +266,101 @@ public class RangedEnemyAttackPlayer : MonoBehaviour
         else
         {
             Debug.LogError(
-                "Enemy Bullet Prefab ??? EnemyProjectile ???"
+                "Enemy Bullet Prefab does not contain EnemyProjectile."
             );
         }
+
+        PlayAttackSound();
+    }
+
+    private void ConfigureAudioSource()
+    {
+        if (audioSource == null)
+        {
+            return;
+        }
+
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.volume = 1f;
+
+        audioSource.spatialBlend = spatialBlend;
+        audioSource.minDistance = minSoundDistance;
+        audioSource.maxDistance = maxSoundDistance;
+
+        audioSource.rolloffMode =
+            AudioRolloffMode.Logarithmic;
+    }
+
+    private void PlayAttackSound()
+    {
+        if (audioSource != null && attackClip != null)
+        {
+            audioSource.PlayOneShot(
+                attackClip,
+                attackVolume
+            );
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (enemyHealth != null && enemyHealth.IsDead)
+        {
+            PlayDeathSound();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (enemyHealth != null && enemyHealth.IsDead)
+        {
+            PlayDeathSound();
+        }
+    }
+
+    private void PlayDeathSound()
+    {
+        if (deathSoundPlayed)
+        {
+            return;
+        }
+
+        deathSoundPlayed = true;
+
+        if (deathClip == null)
+        {
+            return;
+        }
+
+        GameObject temporaryAudioObject =
+            new GameObject(gameObject.name + " Death Sound");
+
+        temporaryAudioObject.transform.position =
+            transform.position;
+
+        AudioSource temporaryAudioSource =
+            temporaryAudioObject.AddComponent<AudioSource>();
+
+        temporaryAudioSource.clip = deathClip;
+        temporaryAudioSource.volume = deathVolume;
+
+        temporaryAudioSource.playOnAwake = false;
+        temporaryAudioSource.loop = false;
+
+        temporaryAudioSource.spatialBlend = spatialBlend;
+        temporaryAudioSource.minDistance = minSoundDistance;
+        temporaryAudioSource.maxDistance = maxSoundDistance;
+
+        temporaryAudioSource.rolloffMode =
+            AudioRolloffMode.Logarithmic;
+
+        temporaryAudioSource.Play();
+
+        Destroy(
+            temporaryAudioObject,
+            deathClip.length + 0.2f
+        );
     }
 
     private void FacePlayer()
