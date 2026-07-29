@@ -4,13 +4,8 @@ public class ClockTeleport : MonoBehaviour
 {
     public Transform teleportDestination;
 
-    private bool hasTeleported = false;
-
-    private void OnTriggerEnter(Collider other)
+private void OnTriggerEnter(Collider other)
     {
-        if (hasTeleported)
-            return;
-
         if (!other.CompareTag("Player"))
             return;
 
@@ -28,8 +23,6 @@ public class ClockTeleport : MonoBehaviour
             Debug.LogError("Teleport Destination is not assigned!");
             return;
         }
-
-        hasTeleported = true;
 
         // Disable Character Controller
         controller.enabled = false;
@@ -57,4 +50,5 @@ public class ClockTeleport : MonoBehaviour
 
         Debug.Log("Player teleported into clock!");
     }
+
 }
