@@ -8,6 +8,10 @@ public class QueenBoss : MonoBehaviour
     public Animator animator;
 
     private PlayerHealthUI playerHealthUI;
+    private Transform playerTransform;
+
+    [Header("Boss Activation Area")]
+    public Collider bossTrigger;
 
     [Header("Projectile (Visual Effect Only)")]
     public GameObject projectilePrefab;
@@ -17,6 +21,16 @@ public class QueenBoss : MonoBehaviour
     public GameObject pawnPrefab;
     public GameObject knightPrefab;
     public Transform[] summonPoints;
+
+    [Header("Summon Amount")]
+    public int phase75PawnCount = 4;
+    public int phase75KnightCount = 0;
+
+    public int phase50PawnCount = 4;
+    public int phase50KnightCount = 2;
+
+    public int phase25PawnCount = 6;
+    public int phase25KnightCount = 4;
 
     [Header("Attack")]
     public float attackCooldown = 3f;
@@ -29,7 +43,6 @@ public class QueenBoss : MonoBehaviour
 
     private bool attacking;
     private bool summoning;
-
     private bool bossActivated;
 
     private bool phase75;
@@ -47,11 +60,33 @@ public class QueenBoss : MonoBehaviour
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
 
-        playerHealthUI = FindFirstObjectByType<PlayerHealthUI>();
+        if (bossTrigger == null)
+            bossTrigger = GetComponent<Collider>();
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        if (player != null)
+        {
+            playerTransform = player.transform;
+
+            playerHealthUI = player.GetComponent<PlayerHealthUI>();
+
+            if (playerHealthUI == null)
+                playerHealthUI = player.GetComponentInChildren<PlayerHealthUI>();
+        }
+
+        if (playerHealthUI == null)
+            playerHealthUI = FindFirstObjectByType<PlayerHealthUI>();
     }
 
     void Update()
     {
+        // Continuously check the player's real position.
+        if (bossActivated && !IsPlayerInsideBossTrigger())
+        {
+            StopBossFight();
+        }
+
         if (!bossActivated)
             return;
 
@@ -70,9 +105,60 @@ public class QueenBoss : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
+            playerTransform = other.transform;
+
+            playerHealthUI = other.GetComponent<PlayerHealthUI>();
+
+            if (playerHealthUI == null)
+                playerHealthUI = other.GetComponentInChildren<PlayerHealthUI>();
+
+            if (playerHealthUI == null)
+                playerHealthUI = FindFirstObjectByType<PlayerHealthUI>();
+
             bossActivated = true;
+
             Debug.Log("Boss Fight Started!");
         }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            playerTransform = other.transform;
+            bossActivated = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            StopBossFight();
+        }
+    }
+
+    bool IsPlayerInsideBossTrigger()
+    {
+        if (bossTrigger == null || playerTransform == null)
+            return false;
+
+        Vector3 playerPosition = playerTransform.position;
+        Vector3 closestPoint = bossTrigger.ClosestPoint(playerPosition);
+
+        return Vector3.Distance(playerPosition, closestPoint) < 0.05f;
+    }
+
+    void StopBossFight()
+    {
+        bossActivated = false;
+
+        StopAllCoroutines();
+
+        attacking = false;
+        summoning = false;
+
+        Debug.Log("Player is outside the boss area. Boss stopped attacking!");
     }
 
     void CheckPhase()
@@ -82,19 +168,41 @@ public class QueenBoss : MonoBehaviour
         if (!phase75 && hp <= 0.75f)
         {
             phase75 = true;
-            StartCoroutine(SummonRoutine(4, 0));
+            SummonForPhase(75);
         }
 
         if (!phase50 && hp <= 0.50f)
         {
             phase50 = true;
-            StartCoroutine(SummonRoutine(4, 2));
+            SummonForPhase(50);
         }
 
         if (!phase25 && hp <= 0.25f)
         {
             phase25 = true;
-            StartCoroutine(SummonRoutine(6, 4));
+            SummonForPhase(25);
+        }
+    }
+
+    void SummonForPhase(int phase)
+    {
+        if (phase == 75)
+        {
+            StartCoroutine(
+                SummonRoutine(phase75PawnCount, phase75KnightCount)
+            );
+        }
+        else if (phase == 50)
+        {
+            StartCoroutine(
+                SummonRoutine(phase50PawnCount, phase50KnightCount)
+            );
+        }
+        else if (phase == 25)
+        {
+            StartCoroutine(
+                SummonRoutine(phase25PawnCount, phase25KnightCount)
+            );
         }
     }
 
@@ -106,8 +214,13 @@ public class QueenBoss : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
-        DealDamageToPlayer();
+        if (!bossActivated || !IsPlayerInsideBossTrigger())
+        {
+            attacking = false;
+            yield break;
+        }
 
+        DealDamageToPlayer();
         ShootProjectile();
 
         yield return new WaitForSeconds(attackCooldown);
@@ -117,6 +230,9 @@ public class QueenBoss : MonoBehaviour
 
     void DealDamageToPlayer()
     {
+        if (!bossActivated || !IsPlayerInsideBossTrigger())
+            return;
+
         if (playerHealthUI == null)
             return;
 
@@ -125,13 +241,20 @@ public class QueenBoss : MonoBehaviour
 
     void ShootProjectile()
     {
+        if (!bossActivated || !IsPlayerInsideBossTrigger())
+            return;
+
         if (audioSource != null && attackSound != null)
             audioSource.PlayOneShot(attackSound);
 
         if (projectilePrefab == null || firePoint == null)
             return;
 
-        Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        Instantiate(
+            projectilePrefab,
+            firePoint.position,
+            firePoint.rotation
+        );
     }
 
     IEnumerator SummonRoutine(int pawnCount, int knightCount)
@@ -145,6 +268,12 @@ public class QueenBoss : MonoBehaviour
 
         yield return new WaitForSeconds(1.5f);
 
+        if (!bossActivated || !IsPlayerInsideBossTrigger())
+        {
+            summoning = false;
+            yield break;
+        }
+
         for (int i = 0; i < pawnCount; i++)
             SpawnEnemy(pawnPrefab);
 
@@ -156,14 +285,22 @@ public class QueenBoss : MonoBehaviour
 
     void SpawnEnemy(GameObject enemyPrefab)
     {
+        if (!bossActivated || !IsPlayerInsideBossTrigger())
+            return;
+
         if (enemyPrefab == null)
             return;
 
         if (summonPoints == null || summonPoints.Length == 0)
             return;
 
-        Transform point = summonPoints[Random.Range(0, summonPoints.Length)];
+        Transform point =
+            summonPoints[Random.Range(0, summonPoints.Length)];
 
-        Instantiate(enemyPrefab, point.position, point.rotation);
+        Instantiate(
+            enemyPrefab,
+            point.position,
+            point.rotation
+        );
     }
 }
