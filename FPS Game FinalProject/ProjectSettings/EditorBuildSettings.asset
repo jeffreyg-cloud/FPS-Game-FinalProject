@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/Scenes/JiaHui.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
+    path: Assets/Scenes/GameCompleteScene.unity
+    guid: 127251ad430b8fb46a5ca2eda2d8f099
+  - enabled: 0
     path: Assets/GXXX/OnlineAssets/GuiXuan 3/Niubilityassignment2.unity
     guid: ef6fd9f832562a547b0c063921b21c8c
   m_configObjects:
